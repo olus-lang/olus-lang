@@ -11,20 +11,6 @@ import Syntax
 table = [[]
         ,[]]
 
-call :: Parser Call
-call = do
-  func <- expr
-  args <- many expr
-  return $ Call func args
-
-closure :: Parser Closure
-closure = do
-  func <- identifier
-  args <- many identifier
-  reserved ":"
-  body <- call
-  return $  Closure func args body
-
 var :: Parser Expr
 var = do
   s <- identifier
@@ -43,18 +29,20 @@ litStr = do
 expr :: Parser Expr
 expr = var <|> litInt <|> litStr
 
-closureStatement :: Parser Statement
-closureStatement = do
-  closure <- closure
-  return $ ClosureStatement closure
+call :: Parser Statement
+call = do
+  callargs <- many1 expr
+  return $ Call callargs
 
-callStatement :: Parser Statement
-callStatement = do
-  call <- call
-  return $ CallStatement call
+closure :: Parser Statement
+closure = do
+  funcargs <- many1 identifier
+  reserved ":"
+  callargs <- many1 expr
+  return $  Closure funcargs callargs
 
 statement :: Parser Statement
-statement = try closureStatement <|> callStatement
+statement = try closure <|> call
 
 contents :: Parser a -> Parser a
 contents p = do

@@ -1,7 +1,6 @@
 module Syntax where
 
-type Identifier
-  = String
+type Identifier = String
 
 data Expr
   = Var Identifier
@@ -9,15 +8,7 @@ data Expr
   | LitStr String
   deriving (Eq, Ord, Show)
 
-data Call
-  = Call Expr [Expr]
-  deriving (Eq, Ord, Show)
-
-data Closure
-  = Closure Identifier [Identifier] Call
-  deriving (Eq, Ord, Show)
-
 data Statement
-  = CallStatement Call
-  | ClosureStatement Closure
+  = Call [Expr]
+  | Closure [Identifier] [Expr]
   deriving (Eq, Ord, Show)

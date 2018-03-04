@@ -1,0 +1,24 @@
+
+show x: print x exit
+
+fact n ret: isZero n base recurse
+  base: ret 1
+  recurse: sub n 1 step1
+    step1 m: fact m step2
+    step2 f: mul n f ret
+    
+even n ret: isZero n then1 else1
+  then1: ret 1
+  else1: sub n 1 recurse1
+    recurse1 m: odd m ret
+    
+odd n ret: isZero n then2 else2
+  then2: ret 0
+  else2: sub n 1 recurse2
+    recurse2 m: even m ret
+
+fact 5 show
+
+even 1 show
+even 2 show
+even 3 show

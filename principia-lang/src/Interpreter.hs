@@ -4,12 +4,14 @@ module Interpreter where
 
 import Prelude hiding (lookup, insert, read)
 import Data.Map (Map, lookup, insert, fromList, union, empty)
-import Control.Monad.State (StateT, get, put, execState, evalStateT)
+import Control.Monad.State (StateT, get, put, execStateT, evalStateT)
 import Control.Monad.Except (ExceptT, runExceptT, throwError)
 import Control.Monad.Identity (Identity, runIdentity)
 import Syntax
 
 -- Interpreter state
+type Environment = Map Identifier Value
+
 data Value
   = ValInt Integer
   | ValStr String
@@ -17,18 +19,35 @@ data Value
   | ValBuiltin BuiltinFunc
   deriving (Eq, Ord, Show)
 
-type Environment = Map Identifier Value
+-- Builtin function type
+newtype BuiltinFunc = BuiltinFunc (String, [Value] -> MInterpreter ())
+instance Eq BuiltinFunc where
+  BuiltinFunc (a, f) == BuiltinFunc (b, g) = a == b
+instance Ord BuiltinFunc where
+  BuiltinFunc (a, f) `compare` BuiltinFunc (b, g) = a `compare` b
+instance Show BuiltinFunc where
+  show (BuiltinFunc (a, f)) = "<" ++ a ++ ">"
 
 -- Interpreter Monads
-type MInterpreterT e m a = StateT Environment (ExceptT e m) a
+type MInterpreterT m a = StateT Environment (ExceptT String m) a
 
-runInterpreterT :: (Monad m) => MInterpreterT e m a -> Environment -> m (Either e a)
+type MInterpreter a = MInterpreterT Identity a
+
+runInterpreterT :: (Monad m) => MInterpreterT m a -> Environment -> m (Either String a)
 runInterpreterT m = runExceptT . evalStateT m
 
-type MInterpreter a = MInterpreterT String Identity a
+execInterpreterT :: (Monad m) => MInterpreterT m a -> Environment -> m (Either String Environment)
+execInterpreterT m = runExceptT . execStateT m
 
 runInterpreter :: MInterpreter a -> Environment -> Either String a
 runInterpreter m = runIdentity . runInterpreterT m
+
+execInterpreter :: MInterpreter a -> Environment -> Either String Environment
+execInterpreter m = runIdentity . execInterpreterT m
+
+execStatements :: Environment -> [Statement] -> Either String Environment
+execStatements env statements = execInterpreter (mapM exec statements) env
+
 
 -- TODO: Add IO monads? Allow builtins to add them?
 
@@ -38,7 +57,7 @@ read id = do
   env <- get
   case lookup id env of
     Just value -> return value
-    Nothing -> throwError "identifier undefined"
+    Nothing -> throwError $ "identifier undefined: " ++ id
 
 -- Write a variable to the environment
 write :: Identifier -> Value -> MInterpreter ()
@@ -71,36 +90,5 @@ exec s = case s of
     vals <- mapM eval callargs
     call vals
 
--- Builtin function type
-newtype BuiltinFunc = BuiltinFunc (String, [Value] -> MInterpreter ())
-instance Eq BuiltinFunc where
-  BuiltinFunc (a, f) == BuiltinFunc (b, g) = a == b
-instance Ord BuiltinFunc where
-  BuiltinFunc (a, f) `compare` BuiltinFunc (b, g) = a `compare` b
-instance Show BuiltinFunc where
-  show (BuiltinFunc (a, f)) = "<" ++ a ++ ">"
-  
-
-builtin :: String -> ([Value] -> MInterpreter ()) -> MInterpreter ()
-builtin name func = write name $ ValBuiltin $ BuiltinFunc (name, func)
-
-builtinExit [] = return ()
-builtinIsZero [ValInt n, t, e] = call [if n == 0 then t else e]
-builtinAdd [ValInt n, ValInt m, k] = call [k, ValInt (n+m)]
-builtinSub [ValInt n, ValInt m, k] = call [k, ValInt (n-m)]
-builtinMul [ValInt n, ValInt m, k] = call [k, ValInt (n*m)]
-
-loadBuiltins :: MInterpreter ()
-loadBuiltins = do
-  builtin "exit" builtinExit
-  builtin "isZero" builtinIsZero
-  builtin "add" builtinAdd
-  builtin "sub" builtinSub
-  builtin "mul" builtinMul
-
-initialEnvironment :: Environment
-initialEnvironment = case runInterpreter (do loadBuiltins; get) empty of
-  Right env -> env
-
-executeStatements :: Environment -> [Statement] -> Either String Environment
-executeStatements env statements = runInterpreter (do mapM exec statements; get) env
+emptyEnvironment :: Environment
+emptyEnvironment = empty

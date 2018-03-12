@@ -1,13 +1,14 @@
 module Main where
 
 import Parser
-import Interpreter (Environment, execStatements)
 import Control.Monad.Trans
 import System.Console.Haskeline (getInputLine, runInputT, defaultSettings, outputStrLn)
 import System.Environment (getArgs)
 import Data.Map (empty)
 import Control.Monad.State (execState)
-import Builtins (initialEnvironment)
+
+data Environment = Environment deriving (Show)
+initialEnvironment = Environment
 
 process :: Environment -> String -> IO (Maybe Environment)
 process env source =
@@ -15,14 +16,15 @@ process env source =
     Left err -> do
       print $ "Error: " ++ show err
       return Nothing
-    Right statements -> do
+    Right scope -> do
       print env
-      mapM_ print statements
-      case execStatements env statements of
-        Left err -> do
-          print $ "Error: " ++ show err
-          return Nothing
-        Right newEnv -> return $ Just newEnv
+      print scope
+      return $ Just env
+      --case execStatements env scope of
+      --  Left err -> do
+      --    print $ "Error: " ++ show err
+      --    return Nothing
+      --  Right newEnv -> return $ Just newEnv
 
 processFile :: String -> IO (Maybe Environment)
 processFile fname = readFile fname >>= process initialEnvironment

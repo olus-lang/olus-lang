@@ -1,29 +1,38 @@
 module Lexer where
 
-import Text.Parsec.String (Parser)
-import Text.Parsec.Language (emptyDef)
-
+import Text.Parsec (SourceName, ParseError)
+import Text.Parsec.Indent (IndentT, IndentParser, runIndentParser)
+import Control.Monad.State (State)
+import Data.Functor.Identity (Identity)
+import qualified Text.Parsec as P
 import qualified Text.Parsec.Token as Tok
 
-lexer :: Tok.TokenParser ()
-lexer = Tok.makeTokenParser style
-  where
-    ops = []
-    names = [":"]
-    style = emptyDef {
-               Tok.commentLine = "#"
-             , Tok.reservedOpNames = ops
-             , Tok.reservedNames = names
-             }
+type IParser a = IndentParser String () a
 
-identifier :: Parser String
-identifier = Tok.identifier lexer
+iParse :: IParser a -> SourceName -> String -> Either ParseError a
+iParse aParser = runIndentParser aParser ()
 
-integer :: Parser Integer
-integer = Tok.integer lexer
+languageDef :: Tok.GenLanguageDef String st (IndentT Identity)
+languageDef = Tok.LanguageDef 
+  { Tok.commentStart   = ""
+  , Tok.commentEnd     = ""
+  , Tok.commentLine    = ""
+  , Tok.nestedComments = True
+  , Tok.identStart     = P.letter P.<|> P.char '_'
+  , Tok.identLetter    = P.alphaNum P.<|> P.oneOf "_'"
+  , Tok.opStart        = Tok.opLetter languageDef
+  , Tok.opLetter       = P.oneOf ":!#$%&*+./<=>?@\\^|-~"
+  , Tok.reservedOpNames= []
+  , Tok.reservedNames  = [":"]
+  , Tok.caseSensitive  = True
+  }
 
-stringLiteral :: Parser String
+lexer :: Tok.GenTokenParser String () (IndentT Identity)
+lexer = Tok.makeTokenParser languageDef
+
+parens        = Tok.parens lexer
+braces        = Tok.braces lexer
+identifier    = Tok.identifier lexer
+integer       = Tok.integer lexer
 stringLiteral = Tok.stringLiteral lexer
-
-reserved :: String -> Parser ()
-reserved = Tok.reserved lexer
+reserved      = Tok.reserved lexer

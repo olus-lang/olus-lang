@@ -6,9 +6,12 @@ data Expr
   = Var Identifier
   | LitInt Integer
   | LitStr String
+  | Fructose [Identifier] [Expr]
+  | Galactose [Expr]
   deriving (Eq, Ord, Show)
 
-data Statement
-  = Call [Expr]
-  | Closure [Identifier] [Expr]
+data Scope
+  = Block [Scope]
+  | Declaration Identifier [Identifier] [Expr]
+  | Call Expr [Expr]
   deriving (Eq, Ord, Show)

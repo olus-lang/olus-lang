@@ -1,64 +1,67 @@
 module Parser where
 
-import Text.Parsec
-import Text.Parsec.String (Parser)
-import qualified Text.Parsec.Expr as Ex
-import qualified Text.Parsec.Token as Tok
+import Text.Parsec (ParseError, eof, try, many, many1, (<|>))
 
 import Lexer
 import Syntax
 
-table = [[]
-        ,[]]
+-- Derive a parser with support for identation
 
-var :: Parser Expr
+var :: IParser Expr
 var = do
   s <- identifier
   return $ Var s
 
-litInt :: Parser Expr
+litInt :: IParser Expr
 litInt = do
   n <- integer
   return $ LitInt n
 
-litStr :: Parser Expr
+litStr :: IParser Expr
 litStr = do
   s <- stringLiteral
   return $ LitStr s
 
-expr :: Parser Expr
-expr = var <|> litInt <|> litStr
-
-call :: Parser Statement
-call = do
-  callargs <- many1 expr
-  return $ Call callargs
-
-closure :: Parser Statement
-closure = do
-  funcargs <- many1 identifier
+fructose :: IParser Expr
+fructose = parens $ do
+  parameters <- many identifier 
   reserved ":"
-  callargs <- many1 expr
-  return $  Closure funcargs callargs
+  call <- many expr
+  return $ Fructose parameters call
 
-statement :: Parser Statement
-statement = try closure <|> call
+galactose :: IParser Expr
+galactose = parens $ do
+  call <- many expr
+  return $ Galactose call
 
-contents :: Parser a -> Parser a
+expr :: IParser Expr
+expr = var <|> litInt <|> litStr <|> try fructose <|> try galactose
+
+call :: IParser Scope
+call = do
+  closure <- expr
+  arguments <- many expr
+  return $ Call closure arguments
+
+declaration :: IParser Scope
+declaration = do
+  name <- identifier
+  parameters <- many identifier
+  reserved ":"
+  call <- many expr
+  return $  Declaration name parameters call
+
+scope :: IParser Scope
+scope = try declaration <|> try call
+
+contents :: IParser a -> IParser a
 contents p = do
-  Tok.whiteSpace lexer
   r <- p
   eof
   return r
 
-toplevel :: Parser [Statement]
-toplevel = many $ do
-    def <- statement
-    -- newline
-    return def
-
 parseExpr :: String -> Either ParseError Expr
-parseExpr s = parse (contents expr) "<stdin>" s
+parseExpr s = iParse (contents expr) "<stdin>" s
 
-parseToplevel :: String -> Either ParseError [Statement]
-parseToplevel s = parse (contents toplevel) "<stdin>" s
+parseToplevel :: String -> Either ParseError Scope
+parseToplevel s = iParse (contents scope) "<stdin>" s

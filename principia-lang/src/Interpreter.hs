@@ -44,7 +44,7 @@ runInterpreter m = runIdentity . runInterpreterT m
 execInterpreter :: MInterpreter a -> Environment -> Either String Environment
 execInterpreter m = runIdentity . execInterpreterT m
 
-execStatements :: Environment -> [Statement] -> Either String Environment
+execStatements :: Environment -> [Declaration] -> Either String Environment
 execStatements env statements = execInterpreter (mapM exec statements) env
 
 emptyEnvironment :: Environment

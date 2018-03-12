@@ -6,6 +6,7 @@ import System.Console.Haskeline (getInputLine, runInputT, defaultSettings, outpu
 import System.Environment (getArgs)
 import Data.Map (empty)
 import Control.Monad.State (execState)
+import Text.Megaparsec (parseErrorPretty')
 
 data Environment = Environment deriving (Show)
 initialEnvironment = Environment
@@ -14,7 +15,7 @@ process :: Environment -> String -> IO (Maybe Environment)
 process env source =
   case parseToplevel source of
     Left err -> do
-      print $ "Error: " ++ show err
+      putStrLn $ "\nError: \n" ++ parseErrorPretty' source err
       return Nothing
     Right scope -> do
       print env

@@ -1,67 +1,111 @@
 module Parser where
 
-import Text.Parsec (ParseError, eof, try, many, many1, (<|>))
+import Control.Monad (void)
+import Data.Void
+import Text.Megaparsec
+import Text.Megaparsec.Char
+import qualified Text.Megaparsec.Char.Lexer as L
 
-import Lexer
 import Syntax
 
--- Derive a parser with support for identation
+type Parser = Parsec Void String
 
-var :: IParser Expr
+--
+-- Lexer
+--
+
+lineComment :: Parser ()
+lineComment = L.skipLineComment "#"
+
+-- space consumer with newline
+scn :: Parser ()
+scn = L.space space1 lineComment empty
+
+-- space consumer without newline
+sc :: Parser ()
+sc = L.space (void $ takeWhile1P Nothing f) lineComment empty
+  where
+    f x = x == ' ' || x == '\t'
+
+lexeme :: Parser a -> Parser a
+lexeme = L.lexeme sc
+
+symbol :: String -> Parser String
+symbol = L.symbol sc
+
+identifier :: Parser String
+identifier = lexeme $ (:) <$> letterChar <*> many alphaNumChar
+
+stringLiteral :: Parser String
+stringLiteral = char '"' >> manyTill L.charLiteral (char '"')
+
+integer :: Parser Integer
+integer = lexeme L.decimal
+
+--
+-- Parser
+--
+
+parens :: Parser a -> Parser a
+parens = between (symbol "(") (symbol ")")
+-- TODO Suppress newline and indentation in parens?
+
+var :: Parser Expr
 var = do
   s <- identifier
   return $ Var s
 
-litInt :: IParser Expr
+litInt :: Parser Expr
 litInt = do
   n <- integer
   return $ LitInt n
 
-litStr :: IParser Expr
+litStr :: Parser Expr
 litStr = do
   s <- stringLiteral
   return $ LitStr s
 
-fructose :: IParser Expr
+fructose :: Parser Expr
 fructose = parens $ do
   parameters <- many identifier 
-  reserved ":"
+  symbol ":"
   call <- many expr
   return $ Fructose parameters call
 
-galactose :: IParser Expr
+galactose :: Parser Expr
 galactose = parens $ do
   call <- many expr
   return $ Galactose call
 
-expr :: IParser Expr
+expr :: Parser Expr
 expr = var <|> litInt <|> litStr <|> try fructose <|> try galactose
 
-call :: IParser Scope
+call :: Parser Scope
 call = do
   closure <- expr
   arguments <- many expr
   return $ Call closure arguments
 
-declaration :: IParser Scope
+declaration :: Parser Scope
 declaration = do
   name <- identifier
   parameters <- many identifier
-  reserved ":"
+  symbol ":"
   call <- many expr
-  return $  Declaration name parameters call
+  return $ Declaration name parameters call
 
-scope :: IParser Scope
+block :: Parser Scope
+block = L.indentBlock scn $
+  return $ L.IndentMany Nothing (return . Block) declaration
+
+scope :: Parser Scope
 scope = try declaration <|> try call
 
-contents :: IParser a -> IParser a
-contents p = do
-  r <- p
-  eof
-  return r
+contents :: Parser a -> Parser a
+contents p = between scn eof p
 
-parseExpr :: String -> Either ParseError Expr
-parseExpr s = iParse (contents expr) "<stdin>" s
+parseExpr :: String -> Either (ParseError (Token String) Void) Expr
+parseExpr s = parse (contents expr) "<stdin>" s
 
-parseToplevel :: String -> Either ParseError Scope
-parseToplevel s = iParse (contents scope) "<stdin>" s
+parseToplevel :: String -> Either (ParseError (Token String) Void) Scope
+parseToplevel s = parse (contents block) "<stdin>" s

@@ -19,15 +19,6 @@ genVariable = do
   put (n + 1)
   return $ "id" ++ show n
 
-
-glucase s = s
-
-fructase s = s
-
-
--- from: step2 f: func a b c (mul n f) d e f
--- to:   step2 f: mul n f (id0: func a b c id0 d e f)
-
 visitCalls :: (Call -> IdGen Call) -> Scope -> IdGen Scope
 visitCalls visitor s = case s of
   Block block -> do
@@ -39,6 +30,58 @@ visitCalls visitor s = case s of
   Statement call -> do
     call' <- visitor call
     return $ Statement call'
+
+--
+-- Glucase
+--
+
+glucase s = s
+
+--
+-- Fructase
+--
+
+isFructose :: Expr -> Bool
+isFructose ex = case ex of
+  (Fructose _ _) -> True
+  _              -> False
+
+findFirstFructose :: [Expr] -> Maybe ([Expr], Expr, [Expr])
+findFirstFructose exs = case findIndex isFructose exs of
+  Nothing -> Nothing
+  Just n -> Just (take n exs, exs !! n, drop (n + 1) exs)
+
+fructaseCall :: Call -> IdGen (Call, [Scope])
+fructaseCall exs = case findFirstFructose exs of
+    Nothing -> return (exs, [])
+    Just (before, Fructose ids call, after) -> do
+      nid <- genVariable
+      (outer, os) <- fructaseCall (before ++ [Var nid] ++ after)
+      (inner, is) <- fructaseCall call
+      return (outer, [Declaration nid ids inner] ++ is ++ os)
+
+fructase' :: Scope -> IdGen [Scope]
+fructase' s = case s of
+  Block block -> do
+    block' <- mapM fructase' block
+    return [Block (concat block')]
+  Declaration name ids call -> do
+    (call', block) <- fructaseCall call
+    return [Declaration name ids call', Block block]
+  Statement call -> do
+    (call', block) <- fructaseCall call
+    return [Statement call', Block block]
+
+fructase :: Scope -> IdGen Scope
+fructase s = do
+  s' <- fructase' s
+  return $ Block s'
+
+-- TODO Cleanup blocks (concat siblings, flatten block of blocks)
+
+--
+-- Galactase
+--
 
 isGalactose :: Expr -> Bool
 isGalactose (Galactose _) = True
@@ -61,5 +104,12 @@ galactaseCall exs = case findFirstGalactose exs of
 galactase :: Scope -> IdGen Scope
 galactase = visitCalls galactaseCall
 
+--
+-- Desugar
+--
+
 desugar :: Scope -> Scope
-desugar s = runIdGen $ galactase s
+desugar s = runIdGen $ do
+  s' <- galactase s
+  s'' <- fructase s'
+  return s''

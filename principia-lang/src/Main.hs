@@ -1,12 +1,14 @@
 module Main where
 
-import Parser
 import Control.Monad.Trans
 import System.Console.Haskeline (getInputLine, runInputT, defaultSettings, outputStrLn)
 import System.Environment (getArgs)
 import Data.Map (empty)
 import Control.Monad.State (execState)
 import Text.Megaparsec (parseErrorPretty')
+
+import Parser
+import Unparser
 
 data Environment = Environment deriving (Show)
 initialEnvironment = Environment
@@ -20,6 +22,7 @@ process env source =
     Right scope -> do
       print env
       print scope
+      putStr $ unparse scope
       return $ Just env
       --case execStatements env scope of
       --  Left err -> do

@@ -95,7 +95,12 @@ findFirstGalactose exs = case findIndex isGalactose exs of
 
 galactaseCall :: Call -> IdGen Call
 galactaseCall exs = case findFirstGalactose exs of
-    Nothing -> return exs
+    Nothing -> mapM f exs where
+      f e = case e of
+        Fructose ids call -> do
+          call' <- galactaseCall call
+          return $ Fructose ids call'
+        e -> return e
     Just (before, Galactose call, after) -> do
       nid <- genVariable
       inner <- galactaseCall (before ++ [Var nid] ++ after)
@@ -113,4 +118,4 @@ desugar :: Scope -> Scope
 desugar s = runIdGen $ do
   s' <- galactase s
   s'' <- fructase s'
-  return s''
+  return s'

@@ -9,6 +9,7 @@ import Text.Megaparsec (parseErrorPretty')
 
 import Parser
 import Unparser
+import Desugar
 
 data Environment = Environment deriving (Show)
 initialEnvironment = Environment
@@ -22,7 +23,7 @@ process env source =
     Right scope -> do
       print env
       print scope
-      putStr $ unparse scope
+      putStr $ unparse $ galactase scope
       return $ Just env
       --case execStatements env scope of
       --  Left err -> do

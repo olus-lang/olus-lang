@@ -14,7 +14,7 @@ unparseExpr (Var x) = x
 unparseExpr (LitInt n) = show n
 unparseExpr (LitStr s) = show s
 unparseExpr (Fructose ids exs) =
-  "(" ++ unwords ids ++ ": " ++ unwords (map unparseExpr exs) ++ ")"
+  "(" ++ unwords ids ++ unwords (":" : map unparseExpr exs) ++ ")"
 unparseExpr (Galactose exs) = "(" ++ unwords (map unparseExpr exs) ++ ")"
 
 indent :: String -> String
@@ -24,6 +24,6 @@ unparse :: Scope -> String
 unparse (Block x) =
   unlines $ map (indent . unparse) x
 unparse (Declaration name ids exs) =
-  unwords (name :ids) ++ ": " ++ unwords (map unparseExpr exs)
-unparse (Call ex exs) =
-  unwords $ unparseExpr ex : map unparseExpr exs
+  unwords (name :ids) ++ unwords (":" : map unparseExpr exs)
+unparse (Statement exs) =
+  unwords $ map unparseExpr exs

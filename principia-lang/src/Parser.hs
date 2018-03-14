@@ -82,11 +82,11 @@ galactose = parens $ do
 expr :: Parser Expr
 expr = var <|> litInt <|> litStr <|> try fructose <|> try galactose
 
-call :: Parser Scope
+call :: Parser Call
 call = do
   closure <- expr
   arguments <- many expr
-  return $ Call closure arguments
+  return $ closure : arguments
 
 declaration :: Parser Scope
 declaration = do
@@ -97,11 +97,13 @@ declaration = do
   return $ Declaration name parameters call
 
 statement :: Parser Scope
-statement = try declaration <|> try call
+statement = do 
+  c <- call
+  return $ Statement c
 
 block :: Parser [Scope]
 block = L.indentBlock scn $ do
-  header <- statement
+  header <- try declaration <|> statement
   return $ L.IndentMany Nothing (return . f header) block
   where
     f :: Scope -> [[Scope]] -> [Scope]
@@ -110,11 +112,8 @@ block = L.indentBlock scn $ do
 
 blocks :: Parser Scope
 blocks = do
-  blks <- many block
-  return $ Block $ concat blks
-
-scope :: Parser Scope
-scope = try declaration <|> try call
+  blocks <- many block
+  return $ Block $ concat blocks
 
 contents :: Parser a -> Parser a
 contents p = between scn eof p

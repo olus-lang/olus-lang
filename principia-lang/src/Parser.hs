@@ -1,3 +1,5 @@
+{-# LANGUAGE TupleSections #-}
+
 module Parser where
 
 import Control.Monad (void)
@@ -94,9 +96,22 @@ declaration = do
   call <- many expr
   return $ Declaration name parameters call
 
-block :: Parser Scope
-block = L.indentBlock scn $
-  return $ L.IndentMany Nothing (return . Block) declaration
+statement :: Parser Scope
+statement = try declaration <|> try call
+
+block :: Parser [Scope]
+block = L.indentBlock scn $ do
+  header <- statement
+  return $ L.IndentMany Nothing (return . f header) block
+  where
+    f :: Scope -> [[Scope]] -> [Scope]
+    f h [] = [h]
+    f h x  = [h, Block $ concat x]
+
+blocks :: Parser Scope
+blocks = do
+  blks <- many block
+  return $ Block $ concat blks
 
 scope :: Parser Scope
 scope = try declaration <|> try call
@@ -108,4 +123,4 @@ parseExpr :: String -> Either (ParseError (Token String) Void) Expr
 parseExpr s = parse (contents expr) "<stdin>" s
 
 parseToplevel :: String -> Either (ParseError (Token String) Void) Scope
-parseToplevel s = parse (contents block) "<stdin>" s
+parseToplevel s = parse (contents blocks) "<stdin>" s

@@ -23,7 +23,7 @@ process env source =
     Right scope -> do
       print env
       print scope
-      putStr $ unparse $ galactase scope
+      putStr $ unparse $ desugar scope
       return $ Just env
       --case execStatements env scope of
       --  Left err -> do

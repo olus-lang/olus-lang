@@ -39,7 +39,7 @@ identifier :: Parser String
 identifier = lexeme $ (:) <$> letterChar <*> many alphaNumChar
 
 stringLiteral :: Parser String
-stringLiteral = char '"' >> manyTill L.charLiteral (char '"')
+stringLiteral = lexeme $ char '"' >> manyTill L.charLiteral (char '"')
 
 integer :: Parser Integer
 integer = lexeme L.decimal

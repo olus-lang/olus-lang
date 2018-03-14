@@ -63,6 +63,7 @@ fructaseCall exs = case findFirstFructose exs of
 fructase' :: Scope -> IdGen [Scope]
 fructase' s = case s of
   Block block -> do
+    -- Odlly, Haskell has no concatMapM
     block' <- mapM fructase' block
     return [Block (concat block')]
   Declaration name ids call -> do

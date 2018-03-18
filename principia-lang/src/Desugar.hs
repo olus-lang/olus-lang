@@ -49,36 +49,51 @@ isFructose ex = case ex of
 findFirstFructose :: [Expr] -> Maybe ([Expr], Expr, [Expr])
 findFirstFructose exs = case findIndex isFructose exs of
   Nothing -> Nothing
-  Just n -> Just (take n exs, exs !! n, drop (n + 1) exs)
+  Just n  -> Just (take n exs, exs !! n, drop (n + 1) exs)
 
 fructaseCall :: Call -> IdGen (Call, [Scope])
 fructaseCall exs = case findFirstFructose exs of
-    Nothing -> return (exs, [])
-    Just (before, Fructose ids call, after) -> do
-      nid <- genVariable
-      (outer, os) <- fructaseCall (before ++ [Var nid] ++ after)
-      (inner, is) <- fructaseCall call
-      return (outer, [Declaration nid ids inner] ++ is ++ os)
+  Nothing -> return (exs, [])
+  Just (before, Fructose ids call, after) -> do
+    nid <- genVariable
+    (outer, os) <- fructaseCall (before ++ [Var nid] ++ after)
+    (inner, is) <- fructaseCall call
+    return (outer, [Declaration nid ids inner] ++ is ++ os)
+
+toBlock :: [Scope] -> [Scope]
+toBlock [] = []
+toBlock b@[Block _] = b
+toBlock a = [Block a]
+
+joinScopes :: [Scope] -> [Scope] -> [Scope]
+joinScopes a [] = a
+joinScopes [] b = b
+joinScopes a b = case (last a, head b) of
+  (Block a', Block b') -> init a ++ Block (a' ++ b') : tail b
+  (_, _) -> a ++ b
+
+concatScopes :: [[Scope]] -> [Scope]
+concatScopes = foldr joinScopes []
 
 fructase' :: Scope -> IdGen [Scope]
 fructase' s = case s of
   Block block -> do
-    -- Odlly, Haskell has no concatMapM
     block' <- mapM fructase' block
-    return [Block (concat block')]
+    return $ toBlock (concatScopes block')
   Declaration name ids call -> do
     (call', block) <- fructaseCall call
-    return [Declaration name ids call', Block block]
+    return $ Declaration name ids call' : toBlock block
   Statement call -> do
     (call', block) <- fructaseCall call
-    return [Statement call', Block block]
+    return $ Statement call' : toBlock block
 
 fructase :: Scope -> IdGen Scope
 fructase s = do
   s' <- fructase' s
-  return $ Block s'
-
--- TODO Cleanup blocks (concat siblings, flatten block of blocks)
+  case s' of
+    [Block b] -> return $ Block b
+    [a] -> return a
+    o -> return $ Block o
 
 --
 -- Galactase

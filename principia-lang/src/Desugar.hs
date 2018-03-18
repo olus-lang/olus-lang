@@ -35,7 +35,46 @@ visitCalls visitor s = case s of
 -- Glucase
 --
 
-glucase s = s
+mergeGlucose :: Call -> Call -> Maybe Call
+mergeGlucose inner [] = return inner
+mergeGlucose inner [x] = do
+  x' <- mergeGlucose' inner x
+  return [x']
+mergeGlucose inner (x:xs) =
+  case mergeGlucose' inner x of
+    Just x' -> Just $ x':xs
+    Nothing -> case mergeGlucose inner xs of
+      Just xs' -> Just $ x:xs'
+      Nothing -> Nothing
+
+mergeGlucose' :: Call -> Expr -> Maybe Expr
+mergeGlucose' inner (Fructose ids call) = do
+  call' <- mergeGlucose inner call
+  return $ Fructose ids call'
+mergeGlucose' inner (Galactose call) = do
+  call' <- mergeGlucose inner call
+  return $ Galactose call'
+mergeGlucose' inner _ = Nothing
+
+mergeGlucose'' :: Scope -> Scope -> Maybe [Scope]
+mergeGlucose'' (Declaration name ids outer) (Statement inner) = do
+  call <- mergeGlucose inner outer
+  return [Declaration name ids call]
+mergeGlucose'' (Declaration name ids outer) (Block (Statement inner:bs)) = do
+  call <- mergeGlucose inner outer
+  return [Declaration name ids call, Block bs]
+mergeGlucose'' _ _ = Nothing
+
+glucase' :: [Scope] -> [Scope]
+glucase' (a:b:xs) =
+  case mergeGlucose'' a b of
+    Just a' -> glucase' (a' ++ xs)
+    Nothing -> a : glucase' (b:xs)
+glucase' a = a
+
+glucase :: Scope -> IdGen Scope
+glucase (Block xs) = return $ Block $ glucase' xs
+glucase a = return a
 
 --
 -- Fructase
@@ -110,17 +149,17 @@ findFirstGalactose exs = case findIndex isGalactose exs of
 
 galactaseCall :: Call -> IdGen Call
 galactaseCall exs = case findFirstGalactose exs of
-    Nothing -> mapM f exs where
-      f e = case e of
-        Fructose ids call -> do
-          call' <- galactaseCall call
-          return $ Fructose ids call'
-        e -> return e
-    Just (before, Galactose call, after) -> do
-      nid <- genVariable
-      inner <- galactaseCall (before ++ [Var nid] ++ after)
-      outer <- galactaseCall (call ++ [Fructose [nid] inner])
-      return outer
+  Nothing -> mapM f exs where
+    f e = case e of
+      Fructose ids call -> do
+        call' <- galactaseCall call
+        return $ Fructose ids call'
+      e -> return e
+  Just (before, Galactose call, after) -> do
+    nid <- genVariable
+    inner <- galactaseCall (before ++ [Var nid] ++ after)
+    outer <- galactaseCall (call ++ [Fructose [nid] inner])
+    return outer
 
 galactase :: Scope -> IdGen Scope
 galactase = visitCalls galactaseCall
@@ -131,6 +170,7 @@ galactase = visitCalls galactaseCall
 
 desugar :: Scope -> Scope
 desugar s = runIdGen $ do
-  s' <- galactase s
-  s'' <- fructase s'
-  return s'
+  s' <- glucase s
+  s'' <- galactase s'
+  s''' <- fructase s''
+  return s'''

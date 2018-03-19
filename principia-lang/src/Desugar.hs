@@ -101,7 +101,7 @@ fructaseCall exs = case findFirstFructose exs of
 
 toBlock :: [Scope] -> [Scope]
 toBlock [] = []
-toBlock b@[Block _] = b
+toBlock [Block a] = toBlock a
 toBlock a = [Block a]
 
 joinScopes :: [Scope] -> [Scope] -> [Scope]
@@ -167,6 +167,13 @@ galactase = visitCalls galactaseCall
 --
 -- Desugar
 --
+
+-- TODO: Make Fructase nested
+
+-- TODO
+--a:
+--  b (:)
+--    c
 
 desugar :: Scope -> Scope
 desugar s = runIdGen $ do

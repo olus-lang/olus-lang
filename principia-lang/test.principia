@@ -1,24 +1,34 @@
 
-show x: print x exit
+printLine s return:
+    print s (:)
+    print "\n" (:)
+    return
 
-fact n ret: isZero n base recurse
-  base: ret 1
-  recurse: sub n 1 step1
-    step1 m: fact m step2
-    step2 f: mul n f ret
-    
-even n ret: isZero n then1 else1
-  then1: ret 1
-  else1: sub n 1 recurse1
-    recurse1 m: odd m ret
-    
-odd n ret: isZero n then2 else2
-  then2: ret 0
-  else2: sub n 1 recurse2
-    recurse2 m: even m ret
+askNum question return:
+    print question (:)
+    return (parseInt (input))
 
-fact 5 show
 
-even 1 show
-even 2 show
-even 3 show
+
+
+fact n return:
+    isZero n (:return 1) (:)
+    return (mul n (fact (sub n 1)))
+
+fib n return:
+    isZero n (:return 0) (:sub n 1 (m:))
+    isZero m (:return 1) (:sub m 1 (k:))
+    return (add (fib m) (fib k))
+
+main return:
+    printLine "Hello, World!" (:)
+    askNum "Please enter a number: " (n:)
+    print n (:)
+    print " factorial is " (:)
+    printLine (fact n) (:)
+    print n (:)
+    print " fibonaci is " (:)
+    printLine (fib n) (:)
+    return
+
+main exit

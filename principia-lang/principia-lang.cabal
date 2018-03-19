@@ -20,6 +20,8 @@ executable principia-lang
                      , Syntax
                      , Desugar
                      , Unparser
+                     , Interpreter
+                     , Builtins
   default-language:    Haskell2010
   build-depends:       base >= 4.7 && < 5
                      , megaparsec

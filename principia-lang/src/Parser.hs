@@ -35,8 +35,8 @@ lexeme = L.lexeme sc
 symbol :: String -> Parser String
 symbol = L.symbol sc
 
-identifier :: Parser String
-identifier = lexeme $ (:) <$> letterChar <*> many alphaNumChar
+identifier' :: Parser String
+identifier' = lexeme $ (:) <$> letterChar <*> many alphaNumChar
 
 stringLiteral :: Parser String
 stringLiteral = lexeme $ char '"' >> manyTill L.charLiteral (char '"')
@@ -51,6 +51,11 @@ integer = lexeme L.decimal
 parens :: Parser a -> Parser a
 parens = between (symbol "(") (symbol ")")
 -- TODO Suppress newline and indentation in parens?
+
+identifier :: Parser Identifier
+identifier = do
+  s <- identifier'
+  return $ Identifier s
 
 var :: Parser Expr
 var = do

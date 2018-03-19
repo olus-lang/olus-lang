@@ -17,7 +17,7 @@ genVariable :: IdGen Identifier
 genVariable = do
   n <- get
   put (n + 1)
-  return $ "id" ++ show n
+  return $ Identifier $ "id" ++ show n
 
 visitCalls :: (Call -> IdGen Call) -> Scope -> IdGen Scope
 visitCalls visitor s = case s of

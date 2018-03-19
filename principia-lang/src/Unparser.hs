@@ -10,13 +10,15 @@ replace s find repl =
     then repl ++ replace (drop (length find) s) find repl
     else head s : replace (tail s) find repl
 
+parens :: [String] -> String
+parens s = "(" ++ unwords s ++ ")"
+
 unparseExpr :: Expr -> String
-unparseExpr (Var x) = x
+unparseExpr (Var x) = show x
 unparseExpr (LitInt n) = show n
 unparseExpr (LitStr s) = show s
-unparseExpr (Fructose ids exs) =
-  "(" ++ unwords ids ++ unwords (":" : map unparseExpr exs) ++ ")"
-unparseExpr (Galactose exs) = "(" ++ unwords (map unparseExpr exs) ++ ")"
+unparseExpr (Fructose ids exs) = parens $ map show ids ++ ":" : map unparseExpr exs
+unparseExpr (Galactose exs) = parens $ map unparseExpr exs
 
 indent :: String -> String
 indent s = "  " ++ replace s "\n" "\n  "
@@ -25,7 +27,7 @@ unparse' :: Scope -> String
 unparse' (Block x) =
   unlines $ map (indent . unparse') x
 unparse' (Declaration name ids exs) =
-  unwords (name :ids) ++ unwords (":" : map unparseExpr exs)
+  unwords (map show $ name : ids) ++ unwords (":" : map unparseExpr exs)
 unparse' (Statement exs) =
   unwords $ map unparseExpr exs
 

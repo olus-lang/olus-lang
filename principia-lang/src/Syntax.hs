@@ -1,6 +1,10 @@
 module Syntax where
 
-type Identifier = String
+newtype Identifier = Identifier String
+  deriving (Eq, Ord)
+
+instance Show Identifier where
+  show (Identifier s) = s
 
 type Call = [Expr]
 

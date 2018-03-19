@@ -5,9 +5,10 @@ module Builtins where
 import Control.Monad (void)
 import Control.Monad.IO.Class (liftIO)
 import Data.Map.Strict (fromList)
+import System.IO (hFlush, stdout)
 
 import Syntax
-import Interpreter
+import Interpreter hiding (read)
 
 initialEnvironment :: Environment
 initialEnvironment = 
@@ -17,10 +18,18 @@ initialEnvironment =
     builtin "print" $ \case
       [ValStr s, ret] -> do
         liftIO $ putStr s
+        liftIO $ hFlush stdout
         void $ call [ret]
       [ValInt n, ret] -> do
         liftIO $ putStr $ show n
+        liftIO $ hFlush stdout
         void $ call [ret],
+    builtin "input" $ \case
+      [ret] -> do
+        input <- liftIO getLine
+        void $ call [ret, ValStr input],
+    builtin "parseInt" $ \case
+      [ValStr s, ret] -> call [ret, ValInt $ read s],
     builtin "isZero" $ \case
       [ValInt n, t, f] -> call [if n == 0 then t else f],
     builtin "add" $ \case

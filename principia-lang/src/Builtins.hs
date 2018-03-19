@@ -14,7 +14,8 @@ initialEnvironment :: Environment
 initialEnvironment = 
   let builtin name func = (Identifier name, ValBuiltin func) in
   fromList [
-    builtin "exit" $ \x -> return (),
+    builtin "exit" $ \case
+      [] -> return (),
     builtin "print" $ \case
       [ValStr s, ret] -> do
         liftIO $ putStr s

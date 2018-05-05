@@ -1,10 +1,7 @@
 module Syntax where
 
 data Binder = Binder String Int
-  deriving (Eq, Ord)
-
-instance Show Binder where
-  show (Binder s _) = s
+  deriving (Eq, Ord, Show)
 
 type Name = Binder
 

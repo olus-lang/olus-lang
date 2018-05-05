@@ -1,29 +1,84 @@
-module Syntax where
+{-# LANGUAGE LambdaCase #-}
+module Binder where
 
+import Prelude hiding (lookup)
+import Control.Monad.State
+import Data.Map.Strict
 import qualified Syntax as S
 
-listIdentifiers :: S.Scope -> [String]
-listIdentifiers = \case
-  S.Block b           -> concatMap listIdentifiers b
-  S.Declaration a b _ -> map listIdentifiers' $ a : b
-  S.Statement _       -> []
+empty :: Map String Int
+empty = Data.Map.Strict.empty
 
-listIdentifiers' :: S.Identifier -> String
-listIdentifiers' (S.Identifier s) = s
+basic :: Map String Int
+basic = fromList [("isZero", 100), ("add", 101), ("print", 102), ("mul", 103), ("sub", 104), ("exit", 105), ("input", 106), ("parseInt", 107)]
 
+-- TODO: Return map from old numbers to new numbers
+numberBinders :: Int -> S.Scope -> S.Scope
+numberBinders start scope = evalState (numberScope scope) start where
+  numberScope :: S.Scope -> State Int S.Scope
+  numberScope = \case
+    S.Block b -> do
+      b' <- mapM numberScope b
+      return $ S.Block b'
+    S.Declaration a b c -> do
+      a' <- numberBinder a
+      b' <- mapM numberBinder b
+      c' <- mapM numberExpression c
+      return $ S.Declaration a' b' c'
+    S.Statement a -> do
+      a' <- mapM numberExpression a
+      return $ S.Statement a'
+  numberExpression :: S.Expression -> State Int S.Expression
+  numberExpression = \case
+    S.Fructose a b -> do
+      a' <- mapM numberBinder a
+      b' <- mapM numberExpression b
+      return $ S.Fructose a' b'
+    S.Galactose a -> do
+      a' <- mapM numberExpression a
+      return $ S.Galactose a'
+    a -> return a
+  numberBinder :: S.Binder -> State Int S.Binder
+  numberBinder (S.Binder s _) = do
+    n <- get
+    put (n + 1)
+    return $ S.Binder s n
 
-newtype Path = Path [Int]
-  deriving (Show, Eq, Ord)
-
-walkIds' :: Path -> S.Scope -> [(Path, S.Identifier)]
-walkIds' (Path p) = \case
-  S.Block b           -> concat $ zipWith f [0..] b where
-    f :: Int -> S.Scope -> [(Path, S.Identifier)]
-    f a = walkIds' (Path $ a : p)
-  S.Declaration c a _ -> (Path $ 0 : p, c) : zipWith f [1..] a where
-    f :: Int -> S.Identifier -> (Path, S.Identifier)
-    f a i = (Path $ a : p , i)
-  S.Statement _       -> []
-
-walkIds :: S.Scope -> [(Path, S.Identifier)]
-walkIds = walkIds' (Path [])
+-- TODO: Forward looking
+bindReferences :: Map String Int -> S.Scope -> S.Scope
+bindReferences initial scope = evalState (bindScope scope) initial where
+  bindScope :: S.Scope -> State (Map String Int) S.Scope
+  bindScope = \case
+    S.Block b -> do
+      env <- get
+      b' <- mapM bindScope b
+      put env
+      return $ S.Block b'
+    S.Declaration a b c -> do
+      a' <- bindBinder a
+      b' <- mapM bindBinder b
+      c' <- mapM bindExpression c
+      return $ S.Declaration a' b' c'
+    S.Statement a -> do
+      a' <- mapM bindExpression a
+      return $ S.Statement a'
+  bindExpression :: S.Expression -> State (Map String Int) S.Expression
+  bindExpression = \case
+    S.Fructose a b -> do
+      a' <- mapM bindBinder a
+      b' <- mapM bindExpression b
+      return $ S.Fructose a' b'
+    S.Galactose a -> do
+      a' <- mapM bindExpression a
+      return $ S.Galactose a'
+    S.Reference s n -> do
+      env <- get
+      case lookup s env of
+        Just n' -> return $ S.Reference s n'
+        Nothing -> return $ S.Reference s n
+    a -> return a
+  bindBinder :: S.Binder -> State (Map String Int) S.Binder
+  bindBinder (S.Binder s n) = do
+    env <- get
+    put $ insert s n env
+    return $ S.Binder s n

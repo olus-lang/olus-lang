@@ -21,6 +21,7 @@ library
   ghc-options:        -Wall
   exposed-modules:     Parser
                      , Unparser
+                     , Binder
                      , Desugar
                      , Compiler
                      , Binary

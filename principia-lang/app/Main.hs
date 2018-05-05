@@ -4,16 +4,19 @@ import Control.Monad (void)
 import Control.Monad.Trans
 import System.Console.Haskeline (getInputLine, runInputT, defaultSettings, outputStrLn)
 import System.Environment (getArgs)
-import Data.Map.Strict (empty, fromList)
-import Control.Monad.State (execState)
 import Text.Megaparsec (parseErrorPretty')
+import Compiler
 
-import Syntax
 import Parser
 import Unparser
 import Desugar
-import Interpreter
-import Builtins
+import Binary
+import qualified CompilerUtils as CU
+
+type Environment = ()
+
+initialEnvironment :: Environment
+initialEnvironment = ()
 
 process :: Environment -> String -> IO (Maybe Environment)
 process env source =
@@ -23,15 +26,15 @@ process env source =
       return Nothing
     Right scope -> do
       putStr $ unparse $ desugar scope
-      result <- runInterpreter (desugar scope) env
-      case result of
-        Left err -> do
-          putStrLn $ "\n❌  Error: " ++ err
-          return Nothing
-        Right newEnv -> return $ Just newEnv
+      print $ compile $ desugar scope
+      print $ toHex $ encode $ compile $ desugar scope
+      encodeFile "test.bin" $ compile $ desugar scope
+      return Nothing
 
-processFile :: String -> IO (Maybe Environment)
-processFile fname = readFile fname >>= process initialEnvironment
+processFile :: FilePath -> IO ()
+processFile fname = do
+  prg <- CU.compile fname
+  print prg
 
 repl :: IO ()
 repl = runInputT defaultSettings (loop initialEnvironment)
@@ -43,7 +46,7 @@ repl = runInputT defaultSettings (loop initialEnvironment)
       Just input -> do
         newEnv <- liftIO $ process env input
         case newEnv of
-          Just newEnv -> loop newEnv
+          Just newEnv' -> loop newEnv'
           Nothing -> loop env
 
 main :: IO ()
@@ -51,4 +54,5 @@ main = do
   args <- getArgs
   case args of
     []      -> repl
-    [fname] -> void $ processFile fname
+    [fname] -> processFile fname
+    _       -> print "To many arguments"

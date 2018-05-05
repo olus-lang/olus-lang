@@ -3,7 +3,7 @@ module Desugar where
 import Data.List (findIndex)
 import Control.Monad.State
 
-import Syntax
+import qualified Syntax as S
 
 --
 -- Monad for generating unique ids
@@ -13,29 +13,30 @@ type IdGen = State Int
 runIdGen :: IdGen a -> a
 runIdGen f = evalState f 0
 
-genVariable :: IdGen Identifier
+genVariable :: IdGen (S.Binder, S.Expression)
 genVariable = do
   n <- get
   put (n + 1)
-  return $ Identifier $ "id" ++ show n
+  let name = "id" ++ show n in
+    return (S.Binder name n, S.Reference name n)
 
-visitCalls :: (Call -> IdGen Call) -> Scope -> IdGen Scope
+visitCalls :: (S.Call -> IdGen S.Call) -> S.Scope -> IdGen S.Scope
 visitCalls visitor s = case s of
-  Block block -> do
+  S.Block block -> do
     block' <- mapM (visitCalls visitor) block
-    return $ Block block'
-  Declaration name ids call -> do
+    return $ S.Block block'
+  S.Declaration name ids call -> do
     call' <- visitor call
-    return $ Declaration name ids call'
-  Statement call -> do
+    return $ S.Declaration name ids call'
+  S.Statement call -> do
     call' <- visitor call
-    return $ Statement call'
+    return $ S.Statement call'
 
 --
 -- Glucase
 --
 
-mergeGlucose :: Call -> Call -> Maybe Call
+mergeGlucose :: S.Call -> S.Call -> Maybe S.Call
 mergeGlucose inner [] = return inner
 mergeGlucose inner [x] = do
   x' <- mergeGlucose' inner x
@@ -47,121 +48,121 @@ mergeGlucose inner (x:xs) =
       Just xs' -> Just $ x:xs'
       Nothing -> Nothing
 
-mergeGlucose' :: Call -> Expr -> Maybe Expr
-mergeGlucose' inner (Fructose ids call) = do
+mergeGlucose' :: S.Call -> S.Expression -> Maybe S.Expression
+mergeGlucose' inner (S.Fructose ids call) = do
   call' <- mergeGlucose inner call
-  return $ Fructose ids call'
-mergeGlucose' inner (Galactose call) = do
+  return $ S.Fructose ids call'
+mergeGlucose' inner (S.Galactose call) = do
   call' <- mergeGlucose inner call
-  return $ Galactose call'
+  return $ S.Galactose call'
 mergeGlucose' inner _ = Nothing
 
-mergeGlucose'' :: Scope -> Scope -> Maybe [Scope]
-mergeGlucose'' (Declaration name ids outer) (Statement inner) = do
+mergeGlucose'' :: S.Scope -> S.Scope -> Maybe [S.Scope]
+mergeGlucose'' (S.Declaration name ids outer) (S.Statement inner) = do
   call <- mergeGlucose inner outer
-  return [Declaration name ids call]
-mergeGlucose'' (Declaration name ids outer) (Block (Statement inner:bs)) = do
+  return [S.Declaration name ids call]
+mergeGlucose'' (S.Declaration name ids outer) (S.Block (S.Statement inner:bs)) = do
   call <- mergeGlucose inner outer
-  return [Declaration name ids call, Block bs]
+  return [S.Declaration name ids call, S.Block bs]
 mergeGlucose'' _ _ = Nothing
 
-glucase' :: [Scope] -> [Scope]
+glucase' :: [S.Scope] -> [S.Scope]
 glucase' (a:b:xs) =
   case mergeGlucose'' a b of
     Just a' -> glucase' (a' ++ xs)
     Nothing -> a : glucase' (b:xs)
 glucase' a = a
 
-glucase :: Scope -> IdGen Scope
-glucase (Block xs) = return $ Block $ glucase' xs
+glucase :: S.Scope -> IdGen S.Scope
+glucase (S.Block xs) = return $ S.Block $ glucase' xs
 glucase a = return a
 
 --
 -- Fructase
 --
 
-isFructose :: Expr -> Bool
+isFructose :: S.Expression -> Bool
 isFructose ex = case ex of
-  (Fructose _ _) -> True
+  (S.Fructose _ _) -> True
   _              -> False
 
-findFirstFructose :: [Expr] -> Maybe ([Expr], Expr, [Expr])
+findFirstFructose :: [S.Expression] -> Maybe ([S.Expression], S.Expression, [S.Expression])
 findFirstFructose exs = case findIndex isFructose exs of
   Nothing -> Nothing
   Just n  -> Just (take n exs, exs !! n, drop (n + 1) exs)
 
-fructaseCall :: Call -> IdGen (Call, [Scope])
+fructaseCall :: S.Call -> IdGen (S.Call, [S.Scope])
 fructaseCall exs = case findFirstFructose exs of
   Nothing -> return (exs, [])
-  Just (before, Fructose ids call, after) -> do
-    nid <- genVariable
-    (outer, os) <- fructaseCall (before ++ [Var nid] ++ after)
+  Just (before, S.Fructose ids call, after) -> do
+    (bind, ref) <- genVariable
+    (outer, os) <- fructaseCall (before ++ [ref] ++ after)
     (inner, is) <- fructaseCall call
-    return (outer, [Declaration nid ids inner] ++ is ++ os)
+    return (outer, [S.Declaration bind ids inner] ++ is ++ os)
 
-toBlock :: [Scope] -> [Scope]
+toBlock :: [S.Scope] -> [S.Scope]
 toBlock [] = []
-toBlock [Block a] = toBlock a
-toBlock a = [Block a]
+toBlock [S.Block a] = toBlock a
+toBlock a = [S.Block a]
 
-joinScopes :: [Scope] -> [Scope] -> [Scope]
+joinScopes :: [S.Scope] -> [S.Scope] -> [S.Scope]
 joinScopes a [] = a
 joinScopes [] b = b
 joinScopes a b = case (last a, head b) of
-  (Block a', Block b') -> init a ++ Block (a' ++ b') : tail b
+  (S.Block a', S.Block b') -> init a ++ S.Block (a' ++ b') : tail b
   (_, _) -> a ++ b
 
-concatScopes :: [[Scope]] -> [Scope]
+concatScopes :: [[S.Scope]] -> [S.Scope]
 concatScopes = foldr joinScopes []
 
-fructase' :: Scope -> IdGen [Scope]
+fructase' :: S.Scope -> IdGen [S.Scope]
 fructase' s = case s of
-  Block block -> do
+  S.Block block -> do
     block' <- mapM fructase' block
     return $ toBlock (concatScopes block')
-  Declaration name ids call -> do
+  S.Declaration name ids call -> do
     (call', block) <- fructaseCall call
-    return $ Declaration name ids call' : toBlock block
-  Statement call -> do
+    return $ S.Declaration name ids call' : toBlock block
+  S.Statement call -> do
     (call', block) <- fructaseCall call
-    return $ Statement call' : toBlock block
+    return $ S.Statement call' : toBlock block
 
-fructase :: Scope -> IdGen Scope
+fructase :: S.Scope -> IdGen S.Scope
 fructase s = do
   s' <- fructase' s
   case s' of
-    [Block b] -> return $ Block b
+    [S.Block b] -> return $ S.Block b
     [a] -> return a
-    o -> return $ Block o
+    o -> return $ S.Block o
 
 --
 -- Galactase
 --
 
-isGalactose :: Expr -> Bool
-isGalactose (Galactose _) = True
+isGalactose :: S.Expression -> Bool
+isGalactose (S.Galactose _) = True
 isGalactose _ = False
 
-findFirstGalactose :: [Expr] -> Maybe ([Expr], Expr, [Expr])
+findFirstGalactose :: [S.Expression] -> Maybe ([S.Expression], S.Expression, [S.Expression])
 findFirstGalactose exs = case findIndex isGalactose exs of
   Nothing -> Nothing
   Just n -> Just (take n exs, exs !! n, drop (n + 1) exs)
 
-galactaseCall :: Call -> IdGen Call
+galactaseCall :: S.Call -> IdGen S.Call
 galactaseCall exs = case findFirstGalactose exs of
   Nothing -> mapM f exs where
     f e = case e of
-      Fructose ids call -> do
+      S.Fructose ids call -> do
         call' <- galactaseCall call
-        return $ Fructose ids call'
+        return $ S.Fructose ids call'
       e -> return e
-  Just (before, Galactose call, after) -> do
-    nid <- genVariable
-    inner <- galactaseCall (before ++ [Var nid] ++ after)
-    outer <- galactaseCall (call ++ [Fructose [nid] inner])
+  Just (before, S.Galactose call, after) -> do
+    (bind, ref) <- genVariable
+    inner <- galactaseCall (before ++ [ref] ++ after)
+    outer <- galactaseCall (call ++ [S.Fructose [bind] inner])
     return outer
 
-galactase :: Scope -> IdGen Scope
+galactase :: S.Scope -> IdGen S.Scope
 galactase = visitCalls galactaseCall
 
 --
@@ -175,7 +176,7 @@ galactase = visitCalls galactaseCall
 --  b (:)
 --    c
 
-desugar :: Scope -> Scope
+desugar :: S.Scope -> S.Scope
 desugar s = runIdGen $ do
   s' <- glucase s
   s'' <- galactase s'

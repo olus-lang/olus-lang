@@ -1,23 +1,31 @@
 module Syntax where
 
-newtype Identifier = Identifier String
+data Binder = Binder String Int
   deriving (Eq, Ord)
 
-instance Show Identifier where
-  show (Identifier s) = s
+instance Show Binder where
+  show (Binder s _) = s
 
-type Call = [Expr]
+type Name = Binder
 
-data Expr
-  = Var Identifier
-  | LitInt Integer
-  | LitStr String
-  | Fructose [Identifier] Call
+type Parameters = [Binder]
+
+type Call = [Expression]
+
+data Expression
+  = Reference String Int
+  | Intrinsic String Int
+  | LiteralInteger Integer
+  | LiteralString String
+  | Fructose Parameters Call
   | Galactose Call
   deriving (Eq, Ord, Show)
 
 data Scope
   = Block [Scope]
-  | Declaration Identifier [Identifier] Call
+  | Declaration Name Parameters Call
   | Statement Call
   deriving (Eq, Ord, Show)
+
+undefined :: Int
+undefined = -1

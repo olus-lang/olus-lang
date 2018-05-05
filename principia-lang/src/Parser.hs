@@ -8,7 +8,7 @@ import Text.Megaparsec
 import Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
 
-import Syntax
+import qualified Syntax as S
 
 type Parser = Parsec Void String
 
@@ -52,79 +52,79 @@ parens :: Parser a -> Parser a
 parens = between (symbol "(") (symbol ")")
 -- TODO Suppress newline and indentation in parens?
 
-identifier :: Parser Identifier
-identifier = do
+binder :: Parser S.Binder
+binder = do
   s <- identifier'
-  return $ Identifier s
+  return $ S.Binder s S.undefined
 
-var :: Parser Expr
-var = do
-  s <- identifier
-  return $ Var s
+reference :: Parser S.Expression
+reference = do
+  s <- identifier'
+  return $ S.Reference s S.undefined
 
-litInt :: Parser Expr
+litInt :: Parser S.Expression
 litInt = do
   n <- integer
-  return $ LitInt n
+  return $ S.LiteralInteger n
 
-litStr :: Parser Expr
+litStr :: Parser S.Expression
 litStr = do
   s <- stringLiteral
-  return $ LitStr s
+  return $ S.LiteralString s
 
-fructose :: Parser Expr
+fructose :: Parser S.Expression
 fructose = parens $ do
-  parameters <- many identifier 
+  parameters <- many binder 
   symbol ":"
   call <- many expr
-  return $ Fructose parameters call
+  return $ S.Fructose parameters call
 
-galactose :: Parser Expr
+galactose :: Parser S.Expression
 galactose = parens $ do
   call <- many expr
-  return $ Galactose call
+  return $ S.Galactose call
 
-expr :: Parser Expr
-expr = var <|> litInt <|> litStr <|> try fructose <|> try galactose
+expr :: Parser S.Expression
+expr = reference <|> litInt <|> litStr <|> try fructose <|> try galactose
 
-call :: Parser Call
+call :: Parser S.Call
 call = do
   closure <- expr
   arguments <- many expr
   return $ closure : arguments
 
-declaration :: Parser Scope
+declaration :: Parser S.Scope
 declaration = do
-  name <- identifier
-  parameters <- many identifier
+  name <- binder
+  parameters <- many binder
   symbol ":"
   call <- many expr
-  return $ Declaration name parameters call
+  return $ S.Declaration name parameters call
 
-statement :: Parser Scope
+statement :: Parser S.Scope
 statement = do 
   c <- call
-  return $ Statement c
+  return $ S.Statement c
 
-block :: Parser [Scope]
+block :: Parser [S.Scope]
 block = L.indentBlock scn $ do
   header <- try declaration <|> statement
   return $ L.IndentMany Nothing (return . f header) block
   where
-    f :: Scope -> [[Scope]] -> [Scope]
+    f :: S.Scope -> [[S.Scope]] -> [S.Scope]
     f h [] = [h]
-    f h x  = [h, Block $ concat x]
+    f h x  = [h, S.Block $ concat x]
 
-blocks :: Parser Scope
+blocks :: Parser S.Scope
 blocks = do
   blocks <- many block
-  return $ Block $ concat blocks
+  return $ S.Block $ concat blocks
 
 contents :: Parser a -> Parser a
 contents p = between scn eof p
 
-parseExpr :: String -> Either (ParseError (Token String) Void) Expr
+parseExpr :: String -> Either (ParseError (Token String) Void) S.Expression
 parseExpr s = parse (contents expr) "<stdin>" s
 
-parseToplevel :: String -> Either (ParseError (Token String) Void) Scope
+parseToplevel :: String -> Either (ParseError (Token String) Void) S.Scope
 parseToplevel s = parse (contents blocks) "<stdin>" s

@@ -4,6 +4,7 @@ import Data.List (findIndex)
 import Control.Monad.State
 
 import qualified Syntax as S
+import qualified Binder as B
 
 --
 -- Monad for generating unique ids
@@ -127,6 +128,7 @@ fructase' s = case s of
     (call', block) <- fructaseCall call
     return $ S.Statement call' : toBlock block
 
+--- TODO: Do not generate scope blocks
 fructase :: S.Scope -> IdGen S.Scope
 fructase s = do
   s' <- fructase' s
@@ -169,16 +171,9 @@ galactase = visitCalls galactaseCall
 -- Desugar
 --
 
--- TODO: Make Fructase nested
-
--- TODO
---a:
---  b (:)
---    c
-
 desugar :: S.Scope -> S.Scope
-desugar s = runIdGen $ do
+desugar s = flip evalState (B.maxBinderNumber s) $ do
   s' <- glucase s
   s'' <- galactase s'
   s''' <- fructase s''
-  return s'''
+  return $ B.flattenScopes s'''

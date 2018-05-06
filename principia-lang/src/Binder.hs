@@ -3,7 +3,7 @@ module Binder where
 
 import Prelude hiding (lookup)
 import Control.Monad.State
-import Data.Map.Strict
+import Data.Map.Strict hiding (map, foldr)
 import qualified Syntax as S
 
 empty :: Map String Int
@@ -11,6 +11,22 @@ empty = Data.Map.Strict.empty
 
 intrinsics :: [String]
 intrinsics = ["isZero","add","print","mul","sub","exit","input","parseInt"]
+
+maxBinderNumber :: S.Scope -> Int
+maxBinderNumber = fScope where
+  fScope :: S.Scope -> Int
+  fScope = \case
+    S.Block b -> foldr (max . fScope) 0 b
+    S.Declaration a b c -> foldr max 0 $ fBinder a : map fBinder b ++ map fExpression c
+    S.Statement a -> foldr (max . fExpression) 0 a
+  fExpression :: S.Expression -> Int
+  fExpression = \case
+    S.Reference _ n -> n
+    S.Fructose a b -> foldr max 0 $ map fBinder a ++ map fExpression b
+    S.Galactose a -> foldr (max . fExpression) 0 a
+    _ -> 0
+  fBinder :: S.Binder -> Int
+  fBinder (S.Binder _ n) = n
 
 -- TODO: Return map from old numbers to new numbers
 numberBinders :: Int -> S.Scope -> S.Scope

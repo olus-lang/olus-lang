@@ -5,11 +5,13 @@ import System.Directory (doesFileExist, getModificationTime)
 import Text.Megaparsec (parseErrorPretty')
 
 import qualified Parser as P
+import qualified Unparser as U
 import qualified Syntax as S
 import qualified Desugar as D
 import Program (Program)
 import qualified Compiler as C
 import qualified Binary as B
+import Binder
 
 sourcePathToBin :: FilePath -> FilePath
 sourcePathToBin = flip replaceExtension ".bin"
@@ -24,9 +26,13 @@ reCompile src bin = do
       putStrLn $ "\n❌  Error: \n" ++ msg
       error msg
     Right ast ->
-      let prog = C.compile $ D.desugar ast in do
-        _ <- B.encodeFile bin prog
-        return prog
+      let ast' = bindingPass intrinsics ast in do
+        print ast'
+        putStrLn $ U.unparse ast'
+        print $ D.desugar ast'
+        putStrLn $ U.unparse $ D.desugar ast'
+        --_ <- B.encodeFile bin prog
+        return $ C.compile $ D.desugar ast
 
 -- Cached compile
 compile :: FilePath -> IO Program

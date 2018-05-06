@@ -9,8 +9,8 @@ import qualified Syntax as S
 empty :: Map String Int
 empty = Data.Map.Strict.empty
 
-basic :: Map String Int
-basic = fromList [("isZero", 100), ("add", 101), ("print", 102), ("mul", 103), ("sub", 104), ("exit", 105), ("input", 106), ("parseInt", 107)]
+intrinsics :: [String]
+intrinsics = ["isZero","add","print","mul","sub","exit","input","parseInt"]
 
 -- TODO: Return map from old numbers to new numbers
 numberBinders :: Int -> S.Scope -> S.Scope
@@ -82,3 +82,15 @@ bindReferences initial scope = evalState (bindScope scope) initial where
     env <- get
     put $ insert s n env
     return $ S.Binder s n
+
+flattenScopes :: S.Scope -> S.Scope
+flattenScopes s = S.Block $ f s where
+  f = \case
+    S.Block a -> concatMap f a
+    a -> [a]
+
+bindingPass :: [String] -> S.Scope -> S.Scope
+bindingPass intrinsics scope =
+  flattenScopes $
+  bindReferences (fromList $ zip intrinsics [0..]) $
+  numberBinders (length intrinsics) scope 

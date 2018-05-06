@@ -11,7 +11,6 @@ type Call = [Expression]
 
 data Expression
   = Reference String Int
-  | Intrinsic String Int
   | LiteralInteger Integer
   | LiteralString String
   | Fructose Parameters Call

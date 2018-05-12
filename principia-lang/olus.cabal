@@ -23,6 +23,7 @@ library
                      , Unparser
                      , Binder
                      , Desugar
+                     , ConstantExtraction
                      , Compiler
                      , Binary
                      , CompilerUtils

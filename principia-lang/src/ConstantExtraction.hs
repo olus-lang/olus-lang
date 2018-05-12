@@ -13,7 +13,7 @@ listConstants = nub . listBlock where
   listBlock = \case
     S.Block a           -> concatMap listBlock a
     S.Declaration _ _ a -> concatMap listExp a
-    S.Statement _       -> []
+    S.Statement a       -> concatMap listExp a
   listExp :: S.Expression -> [P.Constant]
   listExp = \case
     S.LiteralInteger n -> [P.Integer n]

@@ -9,9 +9,6 @@ import qualified Syntax as S
 empty :: Map String Int
 empty = Data.Map.Strict.empty
 
-intrinsics :: [String]
-intrinsics = ["isZero","add","print","mul","sub","exit","input","parseInt"]
-
 maxBinderNumber :: S.Scope -> Int
 maxBinderNumber = fScope where
   fScope :: S.Scope -> Int
@@ -108,5 +105,5 @@ flattenScopes s = S.Block $ f s where
 bindingPass :: [String] -> S.Scope -> S.Scope
 bindingPass intrinsics scope =
   flattenScopes $
-  bindReferences (fromList $ zip intrinsics [0..]) $
+  bindReferences (fromList []) $
   numberBinders (length intrinsics) scope 

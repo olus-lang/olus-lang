@@ -6,7 +6,9 @@ import Data.Maybe (fromJust)
 
 import Syntax as S
 import Program as P
+import Intrinsics as I
 
+-- NOTE: It will bind any unboud references that match intrinsics
 listConstants :: S.Scope -> [P.Constant]
 listConstants = nub . listBlock where
   listBlock :: S.Scope -> [P.Constant]
@@ -18,6 +20,9 @@ listConstants = nub . listBlock where
   listExp = \case
     S.LiteralInteger n -> [P.Integer n]
     S.LiteralString s -> [P.String s]
+    S.Reference s (-1) -> case I.intrinsicIndex s of
+      Just i -> [P.Intrinsic i]
+      Nothing -> []
     _ -> []
 
 referenceConstants :: (P.Constant -> Int) -> S.Scope -> S.Scope
@@ -31,6 +36,9 @@ referenceConstants refmap = mapBlock where
   mapExp = \case
     S.LiteralInteger n -> S.Reference (show n) $ refmap $ P.Integer n
     S.LiteralString s -> S.Reference (show s) $ refmap $ P.String s
+    S.Reference s (-1) -> case I.intrinsicIndex s of
+      Just i -> S.Reference s $ refmap $ P.Intrinsic i
+      Nothing -> S.Reference s (-1)
     a -> a
 
 extractConstants :: Int -> S.Scope -> ([P.Constant], S.Scope)

@@ -5,6 +5,7 @@ Compiler:
   * [x] Desugar
   * [x] Bind variables
   * [x] Extract constants (replace by reference)
+  * [x] Extract intrinsics
   * [ ] Extract Program
   * [ ] Store source locations
 

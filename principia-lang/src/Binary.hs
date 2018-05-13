@@ -126,38 +126,40 @@ instance Serial ([Int], [Int]) where
 
 instance Serial P.Program where
   put p = do
-    -- Magic "Oluś" in Latin-2
-    mapM_ putWord8 [0x4F, 0x6C, 0x75, 0xB6]
+    -- This encodes as "Olus" in ascii
+    mapM_ putInt [0x4F, 0x6C, 0x75, 0x73]
     
     -- Format version major, minor
-    putInt 0
-    putInt 0
+    putInt 0 -- Major format version
+    putInt 0 -- Minor format version
     
     -- Program
     put $ P.constants p
     put $ P.declarations p
-    put $ P.calls p
+    put $ P.statements p
+    
   get = do
     -- Magic
-    -- TODO: Check
+    -- TODO: Check magic
     _ <- getWord8
     _ <- getWord8
     _ <- getWord8
     _ <- getWord8
     
     -- Version
-    -- TODO: Check
+    -- TODO: Check version
     _ <- get :: Get Int
     _ <- get :: Get Int
     
     consts <- get
     decs <- get
-    cls <- get
+    stmts <- get
+    
     return $ P.empty {
       --identifiers = ids,
       P.constants = consts,
       P.declarations = decs,
-      P.calls = cls
+      P.statements = stmts
     }
 
 encode :: Serial a => a -> ByteString

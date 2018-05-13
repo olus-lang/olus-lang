@@ -11,7 +11,7 @@ Compiler:
   * [ ] Store source locations
 
 * Bytecode files
-  * [ ] Renumber references consecutively
+  * [x] Renumber references consecutively
   * [x] Store Program in binary `.olus.bin`
   * [x] Cache compiled source files
   * [ ] Debug info in auxiliary file  `.olus.debug.bin`
@@ -20,7 +20,7 @@ Compiler:
   * [ ] Allow compression using `.olus.bin.gz` and `.olus.debug.bin.gz`
 
 * Compiler passes
-  * [ ] Remove dead code
+  * [x] Remove dead code
   * [ ] Deduplicate declarations
   * [ ] Closure analysis
   * [ ] Extract constant closures

@@ -1,5 +1,6 @@
 module Program where
 
+import Data.Maybe (fromJust)
 import qualified Data.Map.Strict as M
 import Data.List (elemIndex)
 
@@ -45,9 +46,8 @@ renumber fn prog = prog {
   } where
     mapTpl fa fb (a, b) = (fa a, fb b)
 
-insert :: [Constant] -> Constant -> ([Constant], Int)
-insert cs c = case elemIndex c cs of
-  Just i -> (cs, i)
-  Nothing -> (cs ++ [c], length cs)
-
--- TODO: Deduplicate constants
+canonicalize :: Program -> Program
+canonicalize prog = renumber fn prog where
+  old = [0..length (constants prog) - 1] ++ concatMap fst (declarations prog)
+  fm = M.fromList $ zip old [0..]
+  fn a = fromJust $ M.lookup a fm

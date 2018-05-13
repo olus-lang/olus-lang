@@ -3,6 +3,7 @@
 module Binary where
 
 import Prelude hiding (writeFile, readFile)
+import qualified Control.Monad.State as CMS
 import Data.List (unfoldr)
 import Data.Bits (shiftR)
 import Data.Word (Word8)
@@ -125,9 +126,21 @@ instance Serial ([Int], [Int]) where
     a <- get -- TODO: Generate consecutive ids
     b <- get
     return (replicate a 0, b)
+    
+numberDeclarations :: Int -> [([Int], [Int])] -> [([Int], [Int])]
+numberDeclarations start decls = CMS.evalState (mapM fDecl decls) start where
+  fDecl :: ([Int], [Int]) -> CMS.State Int ([Int], [Int])
+  fDecl (a, b) = do
+    a' <- CMS.replicateM (length a) nextId
+    return (a', b)
+  nextId :: CMS.State Int Int
+  nextId = do
+    n <- CMS.get
+    CMS.put $ n + 1
+    return n
 
 instance Serial P.Program where
-  put p = do
+  put p = let p' = P.canonicalize p in do
     -- This encodes as "Olus" in ascii
     mapM_ putInt [0x4F, 0x6C, 0x75, 0x73]
     
@@ -136,9 +149,9 @@ instance Serial P.Program where
     putInt 0 -- Minor format version
     
     -- Program
-    put $ P.constants p
-    put $ P.declarations p
-    put $ P.statements p
+    put $ P.constants p'
+    put $ P.declarations p'
+    put $ P.statements p'
     
   get = do
     -- Magic
@@ -158,9 +171,8 @@ instance Serial P.Program where
     stmts <- get
     
     return $ P.empty {
-      --identifiers = ids,
       P.constants = consts,
-      P.declarations = decs,
+      P.declarations = numberDeclarations (length consts) decs,
       P.statements = stmts
     }
 
@@ -177,6 +189,6 @@ decodeFile :: Serial a => FilePath -> IO a
 decodeFile f = do
   result <- readFile f
   return $ decode result
-  
+
 toHex :: ByteString -> String
 toHex b = BSC.unpack $ toStrict $ toLazyByteString $ lazyByteStringHex b

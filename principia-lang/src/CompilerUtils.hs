@@ -8,7 +8,7 @@ import qualified Parser as P
 import qualified Unparser as U
 import qualified Syntax as S
 import qualified Desugar as D
-import Program (Program)
+import Program (Program, canonicalize)
 import qualified Compiler as C
 import qualified Binary as B
 import qualified ConstantExtraction as CE
@@ -30,7 +30,7 @@ reCompile src bin = do
       error msg
     Right ast -> let
         prog = C.compile ast
-        prog' = DCE.removeDeadDeclarations prog
+        prog' = canonicalize $ DCE.removeDeadDeclarations prog
       in do
         print ast
         print prog

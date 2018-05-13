@@ -7,6 +7,7 @@ Compiler:
   * [x] Extract constants (replace by reference)
   * [x] Extract intrinsics
   * [x] Extract Program
+  * [ ] Store symbol names and sugar-type
   * [ ] Store source locations
 
 * Bytecode files
@@ -25,7 +26,7 @@ Compiler:
   * [ ] Extract constant closures
   * [ ] Inline constant closures
   * [ ] Converting arguments to closure (for register pressure)
-  * [ ] Converting closure to arguments (for unboxing)
+  * [ ] Converting closure to arguments (for register promotion)
 
 * Type system
   * [ ] Pure Type System
@@ -42,10 +43,12 @@ Compiler:
 * Execution
   * [ ] Interpreter
   * [ ] x64 assembler
+  * [ ] Direct jumps for known closures
   * [ ] WebAssembly
 
 * Runtime memory management
-  * [ ] Simple bumb allocator
+  * [ ] Simple bump allocator
+  * [ ] Optimal compacting storage with only back-references?
   * [ ] RC based memory management
   * [ ] Static allocating singletons
   * [ ] Storage re-use patterns

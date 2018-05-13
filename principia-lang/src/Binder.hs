@@ -11,21 +11,22 @@ empty = Data.Map.Strict.empty
 
 maxBinderNumber :: S.Scope -> Int
 maxBinderNumber = fScope where
+  maxMap :: (a -> Int) -> [a] -> Int
+  maxMap f = foldr (max . f) 0
   fScope :: S.Scope -> Int
   fScope = \case
-    S.Block b -> foldr (max . fScope) 0 b
-    S.Declaration a b c -> foldr max 0 $ fBinder a : map fBinder b ++ map fExpression c
-    S.Statement a -> foldr (max . fExpression) 0 a
+    S.Block b -> maxMap fScope b
+    S.Declaration a b c -> max (maxMap fBinder (a : b)) (maxMap fExpression c)
+    S.Statement a -> maxMap fExpression a
   fExpression :: S.Expression -> Int
   fExpression = \case
     S.Reference _ n -> n
-    S.Fructose a b -> foldr max 0 $ map fBinder a ++ map fExpression b
-    S.Galactose a -> foldr (max . fExpression) 0 a
+    S.Fructose a b -> max (maxMap fBinder a) (maxMap fExpression b)
+    S.Galactose a -> maxMap fExpression a
     _ -> 0
   fBinder :: S.Binder -> Int
   fBinder (S.Binder _ n) = n
 
--- TODO: Return map from old numbers to new numbers
 numberBinders :: Int -> S.Scope -> S.Scope
 numberBinders start scope = evalState (numberScope scope) start where
   numberScope :: S.Scope -> State Int S.Scope

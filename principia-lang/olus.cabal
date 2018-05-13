@@ -24,6 +24,7 @@ library
                      , Binder
                      , Desugar
                      , ConstantExtraction
+                     , DeadCodeElimination
                      , Intrinsics
                      , Compiler
                      , Binary

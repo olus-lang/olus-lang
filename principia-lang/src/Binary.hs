@@ -92,6 +92,8 @@ instance Serial a => Serial [a] where
     put $ length a
     mapM_ put a
 
+-- TODO: Sort constants by type (intrinsics, int, string, closures)
+-- And then give the number of them, so we can do away with type flags
 instance Serial P.Constant where
   put = \case
     P.Integer a -> put $ a * 4

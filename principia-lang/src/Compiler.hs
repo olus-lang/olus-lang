@@ -8,6 +8,7 @@ import qualified Program as P
 import qualified Binder as B
 import qualified Desugar as D
 import qualified ConstantExtraction as CE
+import qualified DeadCodeElimination as DCE
 
 extractDeclarations :: S.Scope -> [([Int],[Int])]
 extractDeclarations = fScope where

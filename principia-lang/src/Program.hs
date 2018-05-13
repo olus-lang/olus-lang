@@ -14,7 +14,7 @@ data Program = Program {
 
   -- Program data
   constants :: [Constant],
-  declarations :: [([Int],[Int])],
+  declarations :: [([Int],[Int])], -- (procedure, call)
   statements :: [[Int]],
   
   -- Closures (derived from declarations)
@@ -51,4 +51,3 @@ insert cs c = case elemIndex c cs of
   Nothing -> (cs ++ [c], length cs)
 
 -- TODO: Deduplicate constants
--- TODO: Sort constants by type

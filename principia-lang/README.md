@@ -26,11 +26,10 @@ https://www.cs.tufts.edu/~nr/pubs/zipcfg.pdf
 
 https://www.cs.tufts.edu/~nr/pubs/hoopl10.pdf
 
-
 ```
 $ stack repl
-> :set prompt "\ESC[1;34m%s\n\ESC[0;34mλ> \ESC[m"
-> import Data.Either
-> import System.IO.Unsafe (unsafePerformIO)
-> ast = fromRight (Block []) $ parseToplevel $ unsafePerformIO $ readFile "./test.olus"
+:set prompt "\ESC[1;34m%s\n\ESC[0;34mλ> \ESC[m"
+import Data.Either
+import System.IO.Unsafe (unsafePerformIO)
+ast = fromRight (Block []) $ parseToplevel $ unsafePerformIO $ readFile "./test.olus"
 ```

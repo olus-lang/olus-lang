@@ -12,8 +12,9 @@ import Program (Program)
 import qualified Compiler as C
 import qualified Binary as B
 import qualified ConstantExtraction as CE
+import qualified DeadCodeElimination as DCE
 import qualified Intrinsics as I
-import Binder
+import qualified Binder as Bi
 
 sourcePathToBin :: FilePath -> FilePath
 sourcePathToBin = flip replaceExtension ".olus.bin"
@@ -29,10 +30,13 @@ reCompile src bin = do
       error msg
     Right ast -> let
         prog = C.compile ast
+        prog' = DCE.removeDeadDeclarations prog
       in do
+        print ast
         print prog
-        B.encodeFile bin prog
-        return prog
+        print prog'
+        B.encodeFile bin prog'
+        return prog'
 
 -- Cached compile
 compile :: FilePath -> IO Program

@@ -172,7 +172,7 @@ galactase = visitCalls galactaseCall
 --
 
 desugar :: S.Scope -> S.Scope
-desugar s = flip evalState (B.maxBinderNumber s) $ do
+desugar s = flip evalState (1 + B.maxBinderNumber s) $ do
   s' <- glucase s
   s'' <- galactase s'
   s''' <- fructase s''

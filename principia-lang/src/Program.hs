@@ -38,18 +38,17 @@ empty = Program {
   index = M.empty
 }
 
+renumber :: (Int -> Int) -> Program -> Program
+renumber fn prog = prog {
+    declarations = map (mapTpl (map fn) (map fn)) (declarations prog),
+    statements = map (map fn) (statements prog)
+  } where
+    mapTpl fa fb (a, b) = (fa a, fb b)
+
 insert :: [Constant] -> Constant -> ([Constant], Int)
 insert cs c = case elemIndex c cs of
   Just i -> (cs, i)
   Nothing -> (cs ++ [c], length cs)
-
--- Find renumbering of identifiers to make bindings consecutive
---ordered :: [Declaration] -> Map Int Int
---ordered (Declaration [] )
-
---encode' :: Declaration -> [Int]
---encode' (Declaration b a) = length b ++ length a ++ a
-
 
 -- TODO: Deduplicate constants
 -- TODO: Sort constants by type

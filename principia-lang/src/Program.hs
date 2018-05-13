@@ -6,7 +6,7 @@ import Data.List (elemIndex)
 data Constant
   = Integer Integer
   | String String
-  | Intrinsic Int -- Closure of a builtin function
+  | Intrinsic Int -- Closure of a built in function
   | Closure Int [Int]
   deriving (Show, Eq, Ord)
 
@@ -15,7 +15,7 @@ data Program = Program {
   -- Program data
   constants :: [Constant],
   declarations :: [([Int],[Int])],
-  calls :: [[Int]],
+  statements :: [[Int]],
   
   -- Closures (derived from declarations)
   closures :: [[Int]],
@@ -32,7 +32,7 @@ empty :: Program
 empty = Program {
   constants = [],
   declarations = [],
-  calls = [],
+  statements = [],
   closures = [],
   identifiers = [],
   index = M.empty

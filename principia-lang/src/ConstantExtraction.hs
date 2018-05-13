@@ -31,7 +31,7 @@ referenceConstants refmap = mapBlock where
   mapBlock = \case
     S.Block a           -> S.Block $ map mapBlock a
     S.Declaration a b c -> S.Declaration a b $ map mapExp c
-    S.Statement a       -> S.Statement a
+    S.Statement a       -> S.Statement $ map mapExp a
   mapExp :: S.Expression -> S.Expression
   mapExp = \case
     S.LiteralInteger n -> S.Reference (show n) $ refmap $ P.Integer n
@@ -41,9 +41,10 @@ referenceConstants refmap = mapBlock where
       Nothing -> S.Reference s (-1)
     a -> a
 
-extractConstants :: Int -> S.Scope -> ([P.Constant], S.Scope)
-extractConstants offset s = let
+extractConstants :: S.Scope -> ([P.Constant], S.Scope)
+extractConstants s = let
     consts = listConstants s
-    refmap con = offset + fromJust (elemIndex con consts)
-    s' = referenceConstants refmap s
-  in (consts, s')
+    s' = S.renumber' (length consts +) s -- Shift indices up
+    refmap con = fromJust (elemIndex con consts)
+    s'' = referenceConstants refmap s'
+  in (consts, s'')

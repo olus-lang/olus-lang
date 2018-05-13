@@ -102,8 +102,8 @@ flattenScopes s = S.Block $ f s where
     S.Block a -> concatMap f a
     a -> [a]
 
-bindingPass :: [String] -> S.Scope -> S.Scope
-bindingPass intrinsics scope =
+bindingPass :: Int -> S.Scope -> S.Scope
+bindingPass offset scope =
   flattenScopes $
   bindReferences (fromList []) $
-  numberBinders (length intrinsics) scope 
+  numberBinders offset scope 

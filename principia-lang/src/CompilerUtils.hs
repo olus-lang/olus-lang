@@ -11,10 +11,12 @@ import qualified Desugar as D
 import Program (Program)
 import qualified Compiler as C
 import qualified Binary as B
+import qualified ConstantExtraction as CE
+import qualified Intrinsics as I
 import Binder
 
 sourcePathToBin :: FilePath -> FilePath
-sourcePathToBin = flip replaceExtension ".bin"
+sourcePathToBin = flip replaceExtension ".olus.bin"
 
 reCompile :: FilePath -> FilePath -> IO Program
 reCompile src bin = do
@@ -25,14 +27,12 @@ reCompile src bin = do
       let msg = parseErrorPretty' source err
       putStrLn $ "\n❌  Error: \n" ++ msg
       error msg
-    Right ast ->
-      let ast' = bindingPass intrinsics ast in do
-        print ast'
-        putStrLn $ U.unparse ast'
-        print $ D.desugar ast'
-        putStrLn $ U.unparse $ D.desugar ast'
-        --_ <- B.encodeFile bin prog
-        return $ C.compile $ D.desugar ast
+    Right ast -> let
+        prog = C.compile ast
+      in do
+        print prog
+        B.encodeFile bin prog
+        return prog
 
 -- Cached compile
 compile :: FilePath -> IO Program

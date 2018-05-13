@@ -157,7 +157,7 @@ galactaseCall exs = case findFirstGalactose exs of
       S.Fructose ids call -> do
         call' <- galactaseCall call
         return $ S.Fructose ids call'
-      e -> return e
+      _ -> return e
   Just (before, S.Galactose call, after) -> do
     (bind, ref) <- genVariable
     inner <- galactaseCall (before ++ [ref] ++ after)

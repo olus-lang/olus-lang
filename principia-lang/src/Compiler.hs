@@ -5,64 +5,56 @@ import Data.Maybe (fromJust)
 import Data.List (elemIndex, nub)
 import qualified Syntax as S
 import qualified Program as P
+import qualified Binder as B
+import qualified Desugar as D
+import qualified ConstantExtraction as CE
 
-listConstants :: S.Scope -> [P.Constant]
-listConstants = nub . \case
-  S.Block b           -> concatMap listConstants b
-  S.Declaration _ _ a -> concatMap listConstants' a
-  S.Statement _       -> []
+extractDeclarations :: S.Scope -> [([Int],[Int])]
+extractDeclarations = fScope where
+  fScope :: S.Scope -> [([Int],[Int])]
+  fScope = \case
+    S.Block a -> concatMap fScope a
+    S.Declaration a b c -> [(map fBinder $ a:b, map fExpression c)]
+    _ -> []
+  fExpression :: S.Expression -> Int
+  fExpression = \case
+    S.Reference _ n -> n
+    _ -> error "Expecting only References in declarations"
+  fBinder :: S.Binder -> Int
+  fBinder (S.Binder _ n) = n
 
-listConstants' :: S.Expression -> [P.Constant]
-listConstants' = \case
-  S.LiteralInteger n -> [P.Integer n]
-  S.LiteralString s -> [P.String s]
-  _          -> []
-
-listIdsAndConst :: S.Scope -> P.Program
-listIdsAndConst s = P.empty {
-  -- TODO P.identifiers  = listIdentifiers s,
-  P.constants    = listConstants s
-}
-
-idToIndex :: P.Program -> S.Binder -> Int
-idToIndex p (S.Binder s n) = n
-
-idsToIndices :: P.Program -> [S.Binder] -> [Int]
-idsToIndices p = map (idToIndex p)
-
-exToIndex :: P.Program -> S.Expression -> Int
-exToIndex p = \case
-  S.LiteralInteger n -> li + fromJust (elemIndex (P.Integer n) c)
-  S.LiteralString s -> li + fromJust (elemIndex (P.String s) c)
-  S.Reference _ n    -> n
-  where
-    li = length (P.identifiers p)
-    c = P.constants p
-
-exsToIndices :: P.Program -> [S.Expression] -> [Int]
-exsToIndices p = map (exToIndex p)
-
-toDeclaration :: P.Program -> [S.Binder] -> [S.Expression] -> ([Int], [Int])
-toDeclaration p a b = (idsToIndices p a, exsToIndices p b)
-
-listDeclarations :: P.Program -> S.Scope -> [([Int], [Int])]
-listDeclarations p = \case
-  S.Block b           -> concatMap (listDeclarations p) b
-  S.Declaration a b c -> [toDeclaration p (a : b) c]
-  S.Statement _       -> []
-  
-listCalls :: P.Program -> S.Scope -> [[Int]]
-listCalls p = \case
-  S.Block b       -> concatMap (listCalls p) b
-  S.Declaration{} -> []
-  S.Statement e   -> [exsToIndices p e]
-
-
-addIndex :: P.Program -> P.Program
-addIndex = id -- TODO
+extractStatements :: S.Scope -> [[Int]]
+extractStatements = fScope where
+  fScope :: S.Scope -> [[Int]]
+  fScope = \case
+    S.Block a -> concatMap fScope a
+    S.Statement a -> [map fExpression a]
+    _ -> []
+  fExpression :: S.Expression -> Int
+  fExpression = \case
+    S.Reference _ n -> n
+    _ -> error "Expecting only References in declarations"
 
 compile :: S.Scope -> P.Program
-compile s = addIndex $ p {
-  P.declarations = listDeclarations p s,
-  P.calls        = listCalls p s
-} where p = listIdsAndConst s
+compile scope = program where
+  
+  -- Bind references counting creating indices from zero.
+  -- Flatten scopes to a single block.
+  scope' = B.bindingPass 0 scope
+  
+  -- Replace syntax sugar by simple plain declarations
+  scope'' = D.desugar scope'
+  
+  -- Turn constants into references. Indices start from zero.
+  -- Existing indices are shifted up.
+  (constants, scope''') = CE.extractConstants scope''
+  
+  -- Extract declarations and statements
+  declarations = extractDeclarations scope'''
+  statements = extractStatements scope'''
+  
+  program = P.empty {
+    P.constants = constants,
+    P.declarations = declarations,
+    P.statements = statements
+  }

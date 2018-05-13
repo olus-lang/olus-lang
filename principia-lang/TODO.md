@@ -6,10 +6,11 @@ Compiler:
   * [x] Bind variables
   * [x] Extract constants (replace by reference)
   * [x] Extract intrinsics
-  * [ ] Extract Program
+  * [x] Extract Program
   * [ ] Store source locations
 
 * Bytecode files
+  * [ ] Renumber references consecutively
   * [x] Store Program in binary `.olus.bin`
   * [x] Cache compiled source files
   * [ ] Debug info in auxiliary file  `.olus.debug.bin`
@@ -18,12 +19,13 @@ Compiler:
   * [ ] Allow compression using `.olus.bin.gz` and `.olus.debug.bin.gz`
 
 * Compiler passes
-  * [ ] Cleanup passes
+  * [ ] Remove dead code
+  * [ ] Deduplicate declarations
   * [ ] Closure analysis
-  * [ ] Constant propagation
-  * [ ] Inlining
-  * [ ] Converting arguments to closure
-  * [ ] Converting closure to arguments
+  * [ ] Extract constant closures
+  * [ ] Inline constant closures
+  * [ ] Converting arguments to closure (for register pressure)
+  * [ ] Converting closure to arguments (for unboxing)
 
 * Type system
   * [ ] Pure Type System

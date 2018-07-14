@@ -1,4 +1,4 @@
-# principia-lang
+# The Oluś Programming Language
 
 ## TODO
 

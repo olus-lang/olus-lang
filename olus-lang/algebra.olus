@@ -1,0 +1,41 @@
+
+c "Definition of semiring"
+
+semiring ret:
+  ret S 0 1 add mul
+
+c "Todo: Add semiring laws"
+
+c "Semirings from Semirings"
+
+
+Fraction rig ret:
+  
+  0': pair 0 1
+  
+  1': pair 1 1
+  
+  add' a b:
+    pair (add (mul a d) (mul c b)) (mul b d)
+  
+  mul' a b:
+    pair (mul a c) (mul b d)
+
+
+Complex ring ret:
+
+  0': pair 0 0
+
+  1': pair 1 0
+  
+  i: pair 0 1
+
+  add' a b:
+    pair (add a c) (add b d)
+
+  mul' a b:
+    pair (mul a c) (mul b d)
+  
+
+c "Needs gcd"
+ReducedFraction:

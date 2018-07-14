@@ -2,7 +2,7 @@ name:                olus
 version:             0.1.0.0
 -- synopsis:
 -- description:
-homepage:            https://github.com/githubuser/principia-lang#readme
+homepage:            https://github.com/olus-lang/olus#readme
 license:             BSD3
 license-file:        LICENSE
 author:              Author name here

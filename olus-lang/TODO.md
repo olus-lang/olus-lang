@@ -4,6 +4,8 @@ Compiler:
   * [x] Parse Syntax to AST
   * [x] Desugar
   * [x] Bind variables
+  * [ ] Bind parameters only to following block (if any)
+  * [ ] Allow forward looking bindings
   * [x] Extract constants (replace by reference)
   * [x] Extract intrinsics
   * [x] Extract Program
@@ -27,8 +29,11 @@ Compiler:
   * [ ] Inline constant closures
   * [ ] Converting arguments to closure (for register pressure)
   * [ ] Converting closure to arguments (for register promotion)
+  * [ ] Statically allocate singleton closures (TODO: thread local)
 
 * Type system
+  * [ ] Simple type system
+  * [ ] Support/resolve cyclical types
   * [ ] Pure Type System
   * [ ] Unique types
   * [ ] Singleton closures (at most one exists, can static allocate)

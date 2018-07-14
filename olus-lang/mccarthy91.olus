@@ -1,0 +1,22 @@
+
+comment "https://arxiv.org/abs/cs/9301113"
+
+M n return:
+  if (> n 100) (: return (- n 10)) (:)
+  return (M (M (+ n 11)))
+
+t x y x return:
+  if (<= X Y) (: return y) (:)
+  return (t (t (- x 1) y z) (t (- y 1) z x) (t (- z 1) x y) )
+
+  
+iterate f n i return:
+  if (= n 0) (: return i) (:)
+  iterate f (- n 1) (f i) return
+  
+  compare with "return (f (iterate f (- n 1) i))"
+
+knuth a b c d return: return f
+  f x return:
+    if (x > a) (:return x - b) (:)
+    iterate f c (+ x d) return

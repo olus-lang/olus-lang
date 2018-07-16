@@ -15,6 +15,7 @@ import qualified ConstantExtraction as CE
 import qualified DeadCodeElimination as DCE
 import qualified Intrinsics as I
 import qualified Binder as Bi
+import qualified Closure as Cl
 
 sourcePathToBin :: FilePath -> FilePath
 sourcePathToBin = flip replaceExtension ".olus.bin"
@@ -30,10 +31,13 @@ reCompile src bin = do
       error msg
     Right ast -> let
         prog = C.compile ast
-        prog' = canonicalize $ DCE.removeDeadDeclarations prog
+        prog' = Cl.computeClosures $ canonicalize $ DCE.removeDeadDeclarations prog
       in do
+        putStrLn "AST:"
         print ast
+        putStrLn "Compiled:"
         print prog
+        putStrLn "Processed:"
         print prog'
         B.encodeFile bin prog'
         return prog'

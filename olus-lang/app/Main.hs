@@ -12,6 +12,7 @@ import Unparser
 import Desugar
 import Binary
 import qualified CompilerUtils as CU
+import qualified Interpreter as I
 
 type Environment = ()
 
@@ -35,6 +36,7 @@ processFile :: FilePath -> IO ()
 processFile fname = do
   prg <- CU.compile fname
   print prg
+  I.run prg
 
 repl :: IO ()
 repl = runInputT defaultSettings (loop initialEnvironment)

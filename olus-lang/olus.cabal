@@ -31,6 +31,7 @@ library
                      , CompilerUtils
                      , Types
                      , Closure
+                     , Interpreter
   other-modules:       Syntax
                      , Program
   -- other-modules:

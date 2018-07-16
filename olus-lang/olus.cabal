@@ -29,6 +29,8 @@ library
                      , Compiler
                      , Binary
                      , CompilerUtils
+                     , Types
+                     , Closure
   other-modules:       Syntax
                      , Program
   -- other-modules:

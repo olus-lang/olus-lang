@@ -6,6 +6,7 @@ import Control.Monad.Reader (Reader, ask, runReader)
 import Data.Map.Strict (Map)
 import Data.List (elemIndex)
 import qualified Data.Map.Strict as Map
+import System.IO (hFlush, stdout)
 import System.IO.Unsafe (unsafePerformIO)
 
 import qualified Program as P
@@ -29,9 +30,11 @@ interpretInstrinsic intNum args = f args where
   exit [] = []
   print_ [Integer n, r] = unsafePerformIO $ do
     putStr $ show n
+    hFlush stdout
     return [r]
   print_ [String s, r] = unsafePerformIO $ do
     putStr s
+    hFlush stdout
     return [r]
   isZero [Integer n, t, e] = if n == 0 then [t] else [e]
   add [Integer a, Integer b, r] = [r, Integer $ a + b]
@@ -48,8 +51,8 @@ interpretInstrinsic intNum args = f args where
     3 -> add
     4 -> mul
     5 -> sub
-    6 -> fail "input"
-    7 -> fail "parseInt"
+    6 -> input
+    7 -> parseInt
 
 getConstants :: Reader P.Program (Map Int Value)
 getConstants = do

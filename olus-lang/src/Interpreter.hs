@@ -10,8 +10,6 @@ import System.IO.Unsafe (unsafePerformIO)
 
 import qualified Program as P
 
-import Debug.Trace (trace)
-
 data Value
   = Intrinsic Int
   | Closure Int [Value]
@@ -74,7 +72,7 @@ getDeclIndex n = do
   let declNames = map (head . fst) $ P.declarations prog
   case elemIndex n declNames of
     Just i -> return i
-    Nothing -> fail "Symbol is not a name"
+    Nothing -> fail $ "Symbol " ++ show n ++ " is not a name"
 
 createClosure :: Int -> Map Int Value -> Reader P.Program Value
 createClosure n env = do
@@ -110,11 +108,11 @@ runValues :: [Value] -> Reader P.Program [Value]
 runValues [Intrinsic 0] = return [Intrinsic 0]
 runValues a = do
   a' <- singleStep a
-  runValues $ trace (show a') a'
+  runValues a'
 
 run :: P.Program -> IO ()
 run prog = flip mapM_ (P.statements prog) $ \statement -> do
-  putStrLn $ "Exec: " ++ show statement
+  putStrLn $ "Statement: " ++ show statement
   let values = runReader (getValues statement) prog
   putStrLn $ "Exec: " ++ show values
   let values' = runReader (runValues values) prog

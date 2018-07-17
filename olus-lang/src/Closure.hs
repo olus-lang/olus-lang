@@ -9,10 +9,6 @@ import qualified Data.Maybe as Maybe
 
 import qualified Program as P
 
-import Debug.Trace (trace)
-
-traces a = trace (show a) a
-
 setMinus :: Set Int -> Set Int -> Set Int
 setMinus a b = Set.filter (flip Set.notMember b) a
 
@@ -59,7 +55,7 @@ computeClosures prog = result where
     -- TODO: memoize
     closure'' = Set.unions $ flip map closure' $ \n ->
       if Set.member n visited then Set.empty else
-      if isName n then getClosureRec visited' (trace (ids n) n) else Set.singleton n
+      if isName n then getClosureRec visited' n else Set.singleton n
     -- Remove own arguments
     closure''' = setMinus closure'' (Set.fromList $ name:parameters)
     result = closure'''

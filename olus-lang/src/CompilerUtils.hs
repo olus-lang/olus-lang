@@ -56,7 +56,8 @@ compile source =
       binMod <- getModificationTime bin
       if sourceMod < binMod then do
         putStrLn $ "💾  Loading " ++ bin
-        B.decodeFile bin
+        prog <- B.decodeFile bin
+        return $ Cl.computeClosures prog
       else
         reCompile source bin
     else

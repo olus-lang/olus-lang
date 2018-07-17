@@ -3,8 +3,15 @@ module Closure where
   
 import Data.Set (Set)
 import qualified Data.Set as Set
+import Data.Map.Strict (Map)
+import qualified Data.Map.Strict as Map
+import qualified Data.Maybe as Maybe
 
 import qualified Program as P
+
+import Debug.Trace (trace)
+
+traces a = trace (show a) a
 
 setMinus :: Set Int -> Set Int -> Set Int
 setMinus a b = Set.filter (flip Set.notMember b) a
@@ -14,34 +21,66 @@ computeClosures prog = result where
   
   consts = P.constants prog
   decls = P.declarations prog
+  names = Map.fromList $ zip (map (head . fst) decls) [0..]
+  
+  ids :: Int -> String
+  ids n = (P.identifiers prog) !! n
   
   isBuiltin :: Int -> Bool
   isBuiltin n =  n < length consts
   
-  ownArguments :: [Set Int]
-  ownArguments = map (Set.fromList . fst) decls
+  isName :: Int -> Bool
+  isName n = Map.member n names
   
-  initialMap :: [Set Int]
-  initialMap = map (Set.fromList . snd) decls
+  getNameIdx :: Int -> Int
+  getNameIdx n = Maybe.fromJust $ Map.lookup n names
   
-  withoutBuiltins :: [Set Int]
-  withoutBuiltins = map (Set.filter (not . isBuiltin)) initialMap
+  removeOwnArguments :: (Int, [Int], [Int], Set Int) -> (Int, [Int], [Int], Set Int)
+  removeOwnArguments (name, parameters, call, closure) = (name, parameters, call, closure') where
+    closure' = setMinus closure (Set.fromList $ name:parameters)
   
-  removeOwnArguments :: [Set Int] -> [Set Int]
-  removeOwnArguments a = map f $ zip ownArguments a where
-    f :: (Set Int, Set Int) -> Set Int
-    f (own, new) = setMinus new own
+  initial :: [(Int, [Int], [Int], Set Int)]
+  initial = map f decls where
+    f (name:parameters, call) = let
+      -- Start with call
+      closure = Set.fromList call
+      -- Remove builtins
+      closure' = Set.filter (not . isBuiltin) closure
+      -- Remove own arguments
+      in removeOwnArguments (name, parameters, call, closure')
   
-  replace :: Int -> Set Int -> Set Int -> Set Int
-  replace from to set = Set.unions $ map f $ Set.toList set where
-    f :: Int -> Set Int
-    f n = if n == from then to else Set.singleton n
+  getClosureRec :: Set Int -> Int -> Set Int
+  getClosureRec visited current = result where
+    visited' = Set.union visited $ Set.singleton current
+    (name, parameters, call, closure) = initial !! getNameIdx current
+    -- Start with initial closure
+    closure' = Set.toList closure
+    -- Recursively apply getClosureRec on all names
+    -- TODO: memoize
+    closure'' = Set.unions $ flip map closure' $ \n ->
+      if Set.member n visited then Set.empty else
+      if isName n then getClosureRec visited' (trace (ids n) n) else Set.singleton n
+    -- Remove own arguments
+    closure''' = setMinus closure'' (Set.fromList $ name:parameters)
+    result = closure'''
+  
+  getClosure :: Int -> Set Int
+  getClosure n = getClosureRec Set.empty n
   
   closures :: [Set Int]
-  closures = foldl f withoutBuiltins [0..length decls - 1] where
-    f :: [Set Int] -> Int -> [Set Int]
-    f set n = removeOwnArguments $ map (replace name closure) set where
-      name = head . fst $ decls!!n
-      closure = set!!n
+  closures = map (getClosure . head . fst) decls
   
   result = prog { P.closures = map Set.toList closures }
+
+
+showClosures :: P.Program -> String
+showClosures prog = result where
+  identifiers = P.identifiers prog
+  declarations = P.declarations prog
+  closures = P.closures prog
+  iden :: Int -> String
+  iden n = identifiers !! n
+  showDecl :: (([Int], [Int]), [Int]) -> String
+  showDecl ((name:parameters, call), closure) =
+    (iden name) ++ " [" ++ (unwords $ map iden closure) ++ "] " ++ (unwords $ map iden parameters) ++ ": " ++ (unwords $ map iden call)
+  result = unlines $ map showDecl $ zip declarations closures

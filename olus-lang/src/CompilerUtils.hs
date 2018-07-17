@@ -39,6 +39,8 @@ reCompile src bin = do
         print prog
         putStrLn "Processed:"
         print prog'
+        putStrLn "Closures:"
+        putStrLn $ Cl.showClosures prog'
         B.encodeFile bin prog'
         return prog'
 

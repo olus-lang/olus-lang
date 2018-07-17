@@ -36,6 +36,16 @@ extractStatements = fScope where
     S.Reference _ n -> n
     _ -> error "Expecting only References in declarations"
 
+extractIdentifiers :: S.Scope -> [String]
+extractIdentifiers = fScope where
+  fScope :: S.Scope -> [String]
+  fScope = \case
+    S.Block a -> concatMap fScope a
+    S.Declaration a b c -> map fBinder $ a:b
+    _ -> []
+  fBinder :: S.Binder -> String
+  fBinder (S.Binder s _) = s
+
 compile :: S.Scope -> P.Program
 compile scope = program where
   
@@ -53,9 +63,11 @@ compile scope = program where
   -- Extract declarations and statements
   declarations = extractDeclarations scope'''
   statements = extractStatements scope'''
+  identifiers = (map show constants) ++ extractIdentifiers scope'''
   
   program = P.empty {
     P.constants = constants,
     P.declarations = declarations,
-    P.statements = statements
+    P.statements = statements,
+    P.identifiers = identifiers
   }

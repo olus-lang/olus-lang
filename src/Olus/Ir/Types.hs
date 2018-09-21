@@ -1,7 +1,5 @@
 module Olus.Ir.Types where
 
-import Olus.Ast.Syntax
-
 -- http://dev.stephendiehl.com/fun/006_hindley_milner.html
 
 data Type

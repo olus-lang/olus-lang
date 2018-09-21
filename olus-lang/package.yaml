@@ -1,0 +1,57 @@
+name:                olus
+version:             '0.1.0.0'
+homepage:            https://github.com/olus-lang/olus#readme
+license:             BSD3
+license-file:        LICENSE
+author:              Remco Bloemen <remco@wicked.ventures>
+
+ghc-options: -Wall
+dependencies:
+- base >=4.7
+default-extensions:
+- OverloadedStrings
+- LambdaCase
+extra-source-files: 
+- README.md
+
+library:
+  source-dirs:
+  - src
+  exposed-modules:
+  - Olus.Parser.Parser
+  - Olus.Ast
+  - Olus.Ast.Compiler
+  - Olus.Ast.Unparser
+  - Olus.Ast.Passes.Desugar
+  - Olus.Ir.Binary
+  - Olus.Interpreter.Interpreter
+  - Olus.CompilerUtils
+  dependencies:
+  - megaparsec
+  - mtl
+  - containers
+  - bytestring
+  - binary
+  - utf8-string
+  - filepath
+  - directory
+
+executables:
+  olus:
+    source-dirs: app
+    main: Main.hs
+    dependencies:
+    - olus
+    - mtl
+    - haskeline
+    - megaparsec
+
+tests:
+  unit-tests:
+    main: Test.hs
+    source-dirs: tests
+    dependencies:
+    - olus
+    - hspec
+    - hspec-megaparsec
+    - QuickCheck

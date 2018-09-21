@@ -1,0 +1,15 @@
+
+fact n return:
+    isZero n base recurse
+    base: return 1
+    recurse:
+        sub n 1 step1
+        step1 m: fact m step2
+        step2 f: mul n f return
+
+main return1:
+    fact 5 m0
+    m0 f: print f m1
+    m1: return1
+
+main exit

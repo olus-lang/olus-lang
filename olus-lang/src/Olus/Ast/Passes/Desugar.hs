@@ -1,10 +1,10 @@
-module Desugar where
+module Olus.Ast.Passes.Desugar where
 
 import Data.List (findIndex)
 import Control.Monad.State
 
-import qualified Syntax as S
-import qualified Binder as B
+import qualified Olus.Ast.Syntax as S
+import qualified Olus.Ast.Binder as B
 
 --
 -- Monad for generating unique ids

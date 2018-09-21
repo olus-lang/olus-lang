@@ -1,4 +1,4 @@
-module Program where
+module Olus.Ir.Program where
 
 import Data.Maybe (fromJust)
 import qualified Data.Map.Strict as M

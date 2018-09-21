@@ -1,5 +1,14 @@
 # The Oluś Programming Language
 
+## Get up and running
+
+```
+git clone git@github.com:olus-lang/olus-lang.git
+cd olus-lang/olus-lang
+stack build
+stack exec olus ./hello.olus
+```
+
 ## TODO
 
 - [ ] Compute which closures can be in which variables as a list of candidates.

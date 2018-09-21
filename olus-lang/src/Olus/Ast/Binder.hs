@@ -1,11 +1,11 @@
-{-# LANGUAGE LambdaCase #-}
-module Binder where
+module Olus.Ast.Binder where
 
 import Prelude hiding (lookup)
 import Control.Monad.State
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
-import qualified Syntax as S
+
+import qualified Olus.Ast.Syntax as S
 
 empty :: Map String Int
 empty = Map.empty

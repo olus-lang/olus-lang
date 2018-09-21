@@ -1,8 +1,8 @@
-module Intrinsics where
+module Olus.Ir.Intrinsics where
 
 import Data.List (elemIndex)
 
-import Types (Type(Integer, String, Closure))
+import Olus.Ir.Types (Type(Integer, String, Closure))
 
 intrinsics :: [String]
 intrinsics = ["exit", "print", "isZero", "add", "mul", "sub", "input", "parseInt"]

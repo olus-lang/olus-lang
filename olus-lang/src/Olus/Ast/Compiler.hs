@@ -1,14 +1,13 @@
-{-# LANGUAGE LambdaCase #-}
-module  Compiler where
+module Olus.Ast.Compiler where
 
 import Data.Maybe (fromJust)
 import Data.List (elemIndex, nub)
-import qualified Syntax as S
-import qualified Program as P
-import qualified Binder as B
-import qualified Desugar as D
-import qualified ConstantExtraction as CE
-import qualified DeadCodeElimination as DCE
+import qualified Olus.Ast.Syntax as S
+import qualified Olus.Ir.Program as P
+import qualified Olus.Ast.Binder as B
+import qualified Olus.Ast.Passes.Desugar as D
+import qualified Olus.Ast.Passes.ConstantExtraction as CE
+import qualified Olus.Ir.Passes.DeadCodeElimination as DCE
 
 extractDeclarations :: S.Scope -> [([Int],[Int])]
 extractDeclarations = fScope where

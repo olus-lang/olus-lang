@@ -1,6 +1,6 @@
-module Types where
+module Olus.Ir.Types where
 
-import Syntax
+import Olus.Ast.Syntax
 
 -- http://dev.stephendiehl.com/fun/006_hindley_milner.html
 

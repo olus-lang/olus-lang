@@ -1,11 +1,10 @@
-{-# LANGUAGE LambdaCase #-}
+module Olus.Ir.Core where
 
-module Core where
-
+{-
 import Data.Map.Strict hiding (map)
 
-import Syntax
-import Interpreter
+import Olus.Ast.Syntax
+import Olus.Interpreter.Interpreter
 
 data Program = Program {
     constants :: Map Identifier Value,
@@ -32,3 +31,5 @@ extract = \case
     constants = fromList [],
     procedures = [(name:ids, extractExpr exprs)]
   }
+
+-}

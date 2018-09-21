@@ -1,21 +1,21 @@
-module CompilerUtils where
+module Olus.CompilerUtils where
 
 import System.FilePath (replaceExtension)
 import System.Directory (doesFileExist, getModificationTime)
 import Text.Megaparsec (parseErrorPretty')
 
-import qualified Parser as P
-import qualified Unparser as U
-import qualified Syntax as S
-import qualified Desugar as D
-import Program (Program, canonicalize)
-import qualified Compiler as C
-import qualified Binary as B
-import qualified ConstantExtraction as CE
-import qualified DeadCodeElimination as DCE
-import qualified Intrinsics as I
-import qualified Binder as Bi
-import qualified Closure as Cl
+import qualified Olus.Parser.Parser as P
+import qualified Olus.Ast.Unparser as U
+import qualified Olus.Ast.Syntax as S
+import qualified Olus.Ast.Passes.Desugar as D
+import Olus.Ir.Program (Program, canonicalize)
+import qualified Olus.Ast.Compiler as C
+import qualified Olus.Ir.Binary as B
+import qualified Olus.Ast.Passes.ConstantExtraction as CE
+import qualified Olus.Ir.Passes.DeadCodeElimination as DCE
+import qualified Olus.Ir.Intrinsics as I
+import qualified Olus.Ast.Binder as Bi
+import qualified Olus.Ir.Passes.Closure as Cl
 
 sourcePathToBin :: FilePath -> FilePath
 sourcePathToBin = flip replaceExtension ".olus.bin"

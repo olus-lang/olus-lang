@@ -5,14 +5,14 @@ import Control.Monad.Trans
 import System.Console.Haskeline (getInputLine, runInputT, defaultSettings, outputStrLn)
 import System.Environment (getArgs)
 import Text.Megaparsec (parseErrorPretty')
-import Compiler
 
-import Parser
-import Unparser
-import Desugar
-import Binary
-import qualified CompilerUtils as CU
-import qualified Interpreter as I
+import Olus.Ast.Compiler
+import Olus.Parser.Parser
+import Olus.Ast.Unparser
+import Olus.Ast.Passes.Desugar
+import Olus.Ir.Binary
+import qualified Olus.CompilerUtils as CU
+import qualified Olus.Interpreter.Interpreter as I
 
 type Environment = ()
 

@@ -1,6 +1,5 @@
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE FlexibleInstances #-}
-module Binary where
+module Olus.Ir.Binary where
 
 import Prelude hiding (writeFile, readFile)
 import qualified Control.Monad.State as CMS
@@ -15,7 +14,7 @@ import Data.ByteString.Builder (toLazyByteString, lazyByteStringHex)
 import qualified Data.ByteString.Char8 as BSC
 import Data.Char (ord, chr)
 
-import qualified Program as P
+import qualified Olus.Ir.Program as P
 
 class Serial a where
   get :: Get a

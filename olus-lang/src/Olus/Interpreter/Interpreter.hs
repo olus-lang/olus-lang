@@ -1,6 +1,5 @@
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-module Interpreter where
+module Olus.Interpreter.Interpreter where
 
 import Control.Monad.Reader (Reader, ask, runReader)
 import Data.Map.Strict (Map)
@@ -9,7 +8,7 @@ import qualified Data.Map.Strict as Map
 import System.IO (hFlush, stdout)
 import System.IO.Unsafe (unsafePerformIO)
 
-import qualified Program as P
+import qualified Olus.Ir.Program as P
 
 data Value
   = Intrinsic Int

@@ -1,12 +1,11 @@
-{-# LANGUAGE LambdaCase #-}
-module ConstantExtraction where
+module Olus.Ast.Passes.ConstantExtraction where
 
 import Data.List (elemIndex, nub)
 import Data.Maybe (fromJust)
 
-import Syntax as S
-import Program as P
-import Intrinsics as I
+import Olus.Ast.Syntax as S
+import Olus.Ir.Program as P
+import Olus.Ir.Intrinsics as I
 
 -- NOTE: It will bind any unboud references that match intrinsics
 listConstants :: S.Scope -> [P.Constant]

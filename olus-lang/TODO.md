@@ -1,5 +1,10 @@
 Compiler:
 
+* Project
+  * [x] Split into submodules
+  * [ ] Remove unused code
+  * [ ] Reduce submodule interdependencies
+
 * Parser
   * [x] Parse Syntax to AST
   * [x] Desugar
@@ -24,9 +29,10 @@ Compiler:
 * Compiler passes
   * [x] Remove dead code
   * [ ] Deduplicate declarations
-  * [ ] Closure analysis
+  * [x] Closure analysis
   * [ ] Extract constant closures
   * [ ] Inline constant closures
+  * [ ] Inline intrinsics
   * [ ] Converting arguments to closure (for register pressure)
   * [ ] Converting closure to arguments (for register promotion)
   * [ ] Statically allocate singleton closures (TODO: thread local)
@@ -39,17 +45,18 @@ Compiler:
   * [ ] Singleton closures (at most one exists, can static allocate)
 
 * Builtins
-  * [ ] Basic exit, print, read
+  * [x] Basic exit, print, read
   * [ ] Linux Syscall style open, read, write, stat, etc.
   * [ ] Sockets
   * [ ] Threads
   * [ ] Mmap
 
 * Execution
-  * [ ] Interpreter
+  * [x] Interpreter
+  * [ ] LLVM
+  * [ ] WebAssembly
   * [ ] x64 assembler
   * [ ] Direct jumps for known closures
-  * [ ] WebAssembly
 
 * Runtime memory management
   * [ ] Simple bump allocator

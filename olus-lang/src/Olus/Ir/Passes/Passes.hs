@@ -1,4 +1,6 @@
-import Program
+module Olus.Ir.Passes.Passes where
+
+import Olus.Ir.Program
 
 
 -------------

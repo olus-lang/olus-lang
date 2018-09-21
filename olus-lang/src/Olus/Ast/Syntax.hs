@@ -1,5 +1,4 @@
-{-# LANGUAGE LambdaCase #-}
-module Syntax where
+module Olus.Ast.Syntax where
 
 data Binder = Binder String Int
   deriving (Eq, Ord, Show)

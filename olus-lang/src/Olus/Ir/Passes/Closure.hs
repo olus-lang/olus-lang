@@ -1,5 +1,4 @@
-{-# LANGUAGE LambdaCase #-}
-module Closure where
+module Olus.Ir.Passes.Closure where
   
 import Data.Set (Set)
 import qualified Data.Set as Set
@@ -7,7 +6,7 @@ import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 import qualified Data.Maybe as Maybe
 
-import qualified Program as P
+import qualified Olus.Ir.Program as P
 
 setMinus :: Set Int -> Set Int -> Set Int
 setMinus a b = Set.filter (flip Set.notMember b) a

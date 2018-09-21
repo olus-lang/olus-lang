@@ -1,5 +1,0 @@
-fact n return: isZero n base recurse
-base [n return]: return 1
-recurse [n return]: sub n 1 step1
-step1 m [n return]: fact m step2
-step2 f [n return]: mul n f return

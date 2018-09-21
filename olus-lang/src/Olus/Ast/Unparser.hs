@@ -1,7 +1,6 @@
-{-# LANGUAGE LambdaCase #-}
-module Unparser where 
+module Olus.Ast.Unparser where 
 
-import qualified Syntax as S
+import qualified Olus.Ast.Syntax as S
 
 -- Oddly, Haskell has no replace
 replace :: Eq a => [a] -> [a] -> [a] -> [a]

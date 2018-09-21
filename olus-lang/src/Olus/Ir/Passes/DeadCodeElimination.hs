@@ -1,9 +1,9 @@
-module DeadCodeElimination where
+module Olus.Ir.Passes.DeadCodeElimination where
 
 import Data.Set (Set)
 import qualified Data.Set as Set
 
-import qualified Program as P
+import qualified Olus.Ir.Program as P
 
 setMinus :: (Ord a) => Set a -> Set a -> Set a
 setMinus a b = Set.filter (`Set.notMember` b) a

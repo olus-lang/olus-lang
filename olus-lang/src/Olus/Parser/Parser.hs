@@ -1,6 +1,4 @@
-{-# LANGUAGE TupleSections #-}
-
-module Parser where
+module Olus.Parser.Parser where
 
 import Control.Monad (void)
 import Data.Void
@@ -8,7 +6,7 @@ import Text.Megaparsec
 import Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
 
-import qualified Syntax as S
+import qualified Olus.Ast.Syntax as S
 
 type Parser = Parsec Void String
 

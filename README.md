@@ -4,9 +4,9 @@
 
 ```
 git clone git@github.com:olus-lang/olus-lang.git
-cd olus-lang/olus-lang
+cd olus-lang
 stack build
-stack exec olus ./hello.olus
+stack exec olus ./examples/hello.olus
 ```
 
 ## TODO

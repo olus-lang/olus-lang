@@ -1,13 +1,13 @@
-module Olus.Ast.Compiler where
+module Olus.Ast.Conversions.ToIr where
 
 import Data.Maybe (fromJust)
 import Data.List (elemIndex, nub)
+
 import qualified Olus.Ast.Syntax as S
 import qualified Olus.Ir.Program as P
 import qualified Olus.Ast.Binder as B
 import qualified Olus.Ast.Passes.Desugar as D
 import qualified Olus.Ast.Passes.ConstantExtraction as CE
-import qualified Olus.Ir.Passes.DeadCodeElimination as DCE
 
 extractDeclarations :: S.Scope -> [([Int],[Int])]
 extractDeclarations = fScope where
@@ -45,8 +45,8 @@ extractIdentifiers = fScope where
   fBinder :: S.Binder -> String
   fBinder (S.Binder s _) = s
 
-compile :: S.Scope -> P.Program
-compile scope = program where
+toIr :: S.Scope -> P.Program
+toIr scope = program where
   
   -- Bind references counting creating indices from zero.
   -- Flatten scopes to a single block.

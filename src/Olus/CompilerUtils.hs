@@ -5,11 +5,10 @@ import System.Directory (doesFileExist, getModificationTime)
 import Text.Megaparsec (parseErrorPretty')
 
 import qualified Olus.Parser as P
-import qualified Olus.Ast.Unparser as U
+import Olus.Ast.Conversions
 import qualified Olus.Ast.Syntax as S
 import qualified Olus.Ast.Passes.Desugar as D
 import Olus.Ir.Program (Program, canonicalize)
-import qualified Olus.Ast.Compiler as C
 import qualified Olus.Ir.Binary as B
 import qualified Olus.Ast.Passes.ConstantExtraction as CE
 import qualified Olus.Ir.Passes.DeadCodeElimination as DCE
@@ -30,7 +29,7 @@ reCompile src bin = do
       putStrLn $ "\n❌  Error: \n" ++ msg
       error msg
     Right ast -> let
-        prog = C.compile ast
+        prog = astToIr ast
         prog' = Cl.computeClosures $ canonicalize $ DCE.removeDeadDeclarations prog
       in do
         putStrLn "AST:"

@@ -1,4 +1,4 @@
-module Olus.Ast.Unparser where 
+module Olus.Ast.Conversions.ToString where 
 
 import qualified Olus.Ast.Syntax as S
 
@@ -27,14 +27,14 @@ unparseExpr = \case
 indent :: String -> String
 indent s = "  " ++ replace s "\n" "\n  "
 
-unparse' :: S.Scope -> String
-unparse' = \case
-  S.Block x -> unlines $ map (indent . unparse') x
+unparse :: S.Scope -> String
+unparse = \case
+  S.Block x -> unlines $ map (indent . unparse) x
   S.Declaration name ids exs ->
     unwords (map unparseBinder $ name : ids) ++ unwords (":" : map unparseExpr exs)
   S.Statement exs-> unwords $ map unparseExpr exs
 
-unparse :: S.Scope -> String
-unparse = \case
-  S.Block x -> unlines $ map unparse' x
-  x -> unparse' x
+toString :: S.Scope -> String
+toString = \case
+  S.Block x -> unlines $ map unparse x
+  x -> unparse x

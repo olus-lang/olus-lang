@@ -10,24 +10,6 @@ import qualified Olus.Ast.Syntax as S
 empty :: Map String Int
 empty = Map.empty
 
-maxBinderNumber :: S.Scope -> Int
-maxBinderNumber = fScope where
-  maxMap :: (a -> Int) -> [a] -> Int
-  maxMap f = foldr (max . f) 0
-  fScope :: S.Scope -> Int
-  fScope = \case
-    S.Block b -> maxMap fScope b
-    S.Declaration a b c -> max (maxMap fBinder (a : b)) (maxMap fExpression c)
-    S.Statement a -> maxMap fExpression a
-  fExpression :: S.Expression -> Int
-  fExpression = \case
-    S.Reference _ n -> n
-    S.Fructose a b -> max (maxMap fBinder a) (maxMap fExpression b)
-    S.Galactose a -> maxMap fExpression a
-    _ -> 0
-  fBinder :: S.Binder -> Int
-  fBinder (S.Binder _ n) = n
-
 numberBinders :: Int -> S.Scope -> S.Scope
 numberBinders start scope = evalState (numberScope scope) start where
   numberScope :: S.Scope -> State Int S.Scope

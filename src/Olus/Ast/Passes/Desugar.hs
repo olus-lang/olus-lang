@@ -4,7 +4,7 @@ import Data.List (findIndex)
 import Control.Monad.State
 
 import qualified Olus.Ast.Syntax as S
-import qualified Olus.Ast.Binder as B
+import qualified Olus.Ast.Passes.Binder as B
 
 --
 -- Monad for generating unique ids

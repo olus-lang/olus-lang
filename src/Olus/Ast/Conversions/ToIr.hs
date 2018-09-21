@@ -4,7 +4,7 @@ import Data.Maybe (fromJust)
 import Data.List (elemIndex, nub)
 
 import qualified Olus.Ast.Syntax as S
-import qualified Olus.Ast.Binder as B
+import qualified Olus.Ast.Passes.Binder as B
 import qualified Olus.Ast.Passes.ConstantExtraction as CE
 import qualified Olus.Ast.Passes.Desugar as D
 import qualified Olus.Ir.Program as P

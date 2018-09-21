@@ -13,7 +13,7 @@ import qualified Olus.Ir.Binary as B
 import qualified Olus.Ast.Passes.ConstantExtraction as CE
 import qualified Olus.Ir.Passes.DeadCodeElimination as DCE
 import qualified Olus.Ir.Intrinsics as I
-import qualified Olus.Ast.Binder as Bi
+import qualified Olus.Ast.Passes.Binder as Bi
 import qualified Olus.Ir.Passes.Closure as Cl
 
 sourcePathToBin :: FilePath -> FilePath

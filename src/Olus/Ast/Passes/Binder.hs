@@ -1,4 +1,4 @@
-module Olus.Ast.Binder where
+module Olus.Ast.Passes.Binder where
 
 import Prelude hiding (lookup)
 import Control.Monad.State

@@ -18,7 +18,7 @@ library:
   source-dirs:
   - src
   exposed-modules:
-  - Olus.Parser.Parser
+  - Olus.Parser
   - Olus.Ast
   - Olus.Ast.Compiler
   - Olus.Ast.Unparser

@@ -4,7 +4,7 @@ import System.FilePath (replaceExtension)
 import System.Directory (doesFileExist, getModificationTime)
 import Text.Megaparsec (parseErrorPretty')
 
-import qualified Olus.Parser.Parser as P
+import qualified Olus.Parser as P
 import qualified Olus.Ast.Unparser as U
 import qualified Olus.Ast.Syntax as S
 import qualified Olus.Ast.Passes.Desugar as D

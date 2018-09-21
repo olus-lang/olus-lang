@@ -16,6 +16,13 @@ Compiler:
   * [x] Extract Program
   * [ ] Store symbol names and sugar-type
   * [ ] Store source locations
+  * [ ] Ignore newlines and indentation in parens
+  * [ ] Unicode indentifiers
+  * [ ] Opening and closing quotes
+  * [ ] Maplet
+  * [ ] Base and exponent notation for numerals
+  * [ ] Deprecate line comments
+  * [ ] Right-to-left support
 
 * Bytecode files
   * [x] Renumber references consecutively

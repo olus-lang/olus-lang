@@ -1,63 +1,24 @@
 module Olus.Parser.Parser where
 
-import Control.Monad (void)
 import Data.Void
 import Text.Megaparsec
-import Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
 
+import Olus.Parser.Base
+import Olus.Parser.Lexer
 import qualified Olus.Ast.Syntax as S
 
-type Parser = Parsec Void String
-
---
--- Lexer
---
-
-lineComment :: Parser ()
-lineComment = L.skipLineComment "#"
-
--- space consumer with newline
-scn :: Parser ()
-scn = L.space space1 lineComment empty
-
--- space consumer without newline
-sc :: Parser ()
-sc = L.space (void $ takeWhile1P Nothing f) lineComment empty
-  where
-    f x = x == ' ' || x == '\t'
-
-lexeme :: Parser a -> Parser a
-lexeme = L.lexeme sc
-
-symbol :: String -> Parser String
-symbol = L.symbol sc
-
-identifier' :: Parser String
-identifier' = lexeme $ (:) <$> letterChar <*> many alphaNumChar
-
-stringLiteral :: Parser String
-stringLiteral = lexeme $ char '"' >> manyTill L.charLiteral (char '"')
-
-integer :: Parser Integer
-integer = lexeme L.decimal
-
---
--- Parser
---
-
 parens :: Parser a -> Parser a
-parens = between (symbol "(") (symbol ")")
--- TODO Suppress newline and indentation in parens?
+parens = between parenOpen parenClose
 
 binder :: Parser S.Binder
 binder = do
-  s <- identifier'
+  s <- identifier
   return $ S.Binder s S.undefined
 
 reference :: Parser S.Expression
 reference = do
-  s <- identifier'
+  s <- identifier
   return $ S.Reference s S.undefined
 
 litInt :: Parser S.Expression
@@ -70,39 +31,39 @@ litStr = do
   s <- stringLiteral
   return $ S.LiteralString s
 
-fructose :: Parser S.Expression
-fructose = parens $ do
-  parameters <- many binder 
-  symbol ":"
-  call <- many expr
-  return $ S.Fructose parameters call
-
-galactose :: Parser S.Expression
-galactose = parens $ do
-  call <- many expr
-  return $ S.Galactose call
-
 expr :: Parser S.Expression
 expr = reference <|> litInt <|> litStr <|> try fructose <|> try galactose
-
+  
 call :: Parser S.Call
 call = do
   closure <- expr
   arguments <- many expr
   return $ closure : arguments
 
+fructose :: Parser S.Expression
+fructose = parens $ do
+  parameters <- many binder 
+  maplet
+  call' <- call
+  return $ S.Fructose parameters call'
+
+galactose :: Parser S.Expression
+galactose = parens $ do
+  call' <- call
+  return $ S.Galactose call'
+
 declaration :: Parser S.Scope
 declaration = do
   name <- binder
   parameters <- many binder
-  symbol ":"
-  call <- many expr
-  return $ S.Declaration name parameters call
+  maplet
+  call' <- call
+  return $ S.Declaration name parameters call'
 
 statement :: Parser S.Scope
 statement = do 
-  c <- call
-  return $ S.Statement c
+  call' <- call
+  return $ S.Statement call'
 
 block :: Parser [S.Scope]
 block = L.indentBlock scn $ do
@@ -115,14 +76,8 @@ block = L.indentBlock scn $ do
 
 blocks :: Parser S.Scope
 blocks = do
-  blocks <- many block
-  return $ S.Block $ concat blocks
+  blocks' <- many block
+  return $ S.Block $ concat blocks'
 
 contents :: Parser a -> Parser a
 contents p = between scn eof p
-
-parseExpr :: String -> Either (ParseError (Token String) Void) S.Expression
-parseExpr s = parse (contents expr) "<stdin>" s
-
-parseToplevel :: String -> Either (ParseError (Token String) Void) S.Scope
-parseToplevel s = parse (contents blocks) "<stdin>" s

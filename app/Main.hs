@@ -7,7 +7,7 @@ import System.Environment (getArgs)
 import Text.Megaparsec (parseErrorPretty')
 
 import Olus.Ast.Compiler
-import Olus.Parser.Parser
+import Olus.Parser
 import Olus.Ast.Unparser
 import Olus.Ast.Passes.Desugar
 import Olus.Ir.Binary

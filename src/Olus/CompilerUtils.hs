@@ -29,11 +29,17 @@ reCompile src bin = do
       putStrLn $ "\n❌  Error: \n" ++ msg
       error msg
     Right ast -> let
+        ast' = D.desugar $ Bi.bindingPass 0 ast
+        modu = astToModule ast'
         prog = astToIr ast
         prog' = Cl.computeClosures $ canonicalize $ DCE.removeDeadDeclarations prog
       in do
         putStrLn "AST:"
         print ast
+        putStrLn "AST':"
+        print ast'
+        putStrLn "Module:"
+        print modu
         putStrLn "Compiled:"
         print prog
         putStrLn "Processed:"

@@ -121,21 +121,36 @@ replaceReference a b =
         Declaration b (Call $ mapList r) (mapList co)
 
 --
--- Constants
+-- Constants, Declarations and Statements
 --
+
+addConstant :: Constant -> WithModule ()
+addConstant c = do
+  m <- getModule
+  let cs = constants m
+  setModule $ m { constants = cs ++ [c] }
+
+addDeclaration :: Declaration -> WithModule ()
+addDeclaration d = do
+  m <- getModule
+  let ds = declarations m
+  setModule $ m { declarations = ds ++ [d] }
+  
+addStatement :: Call -> WithModule ()
+addStatement s = do
+  m <- getModule
+  let ss = statements m
+  setModule $ m { statements = ss ++ [s] }
 
 -- Returns a reference to the constant of that value or creates a new one.
 makeConstant :: Value -> WithModule Reference
 makeConstant v = do
+  let existing (Constant _ v') = v == v' 
   m <- getModule
-  let
-    c = constants m
-    existing :: Constant -> Bool
-    existing (Constant _ v') = v == v' 
-  case find existing c of
-    Just (Constant b _) -> return $ makeReference b
+  case find existing (constants m) of
+    Just (Constant b _) ->
+      return $ makeReference b
     Nothing -> do
       b <- makeBinder
-      let c' = c ++ [Constant b v]
-      setModule $ m { constants = c' }
+      addConstant $ Constant b v
       return $ makeReference b

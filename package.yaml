@@ -23,6 +23,7 @@ library:
   - Olus.Ast.Conversions
   - Olus.Ast.Passes.Desugar
   - Olus.Ir.Binary
+  - Olus.Ir.Module
   - Olus.Interpreter.Interpreter
   - Olus.CompilerUtils
   dependencies:

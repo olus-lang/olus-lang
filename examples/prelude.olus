@@ -1,0 +1,71 @@
+bottom: bottom
+comment contents: bottom
+section title: bottom
+
+todo: bottom
+
+comment "The above three lines define a commenting procedure that I can now use."
+
+
+section "Booleans"
+
+comment "True and false are defined in Church/Scott style, but we do not declare the type constructors, only their two instances."
+
+true t f: t
+  comment "`true` is a closure that calls the first argument."
+
+false r f: f
+  comment "`false` is a closure that calls the second argument."
+
+
+section "Natural numbers"
+
+comment "Natural numbers are defined using unary Scott encoding."
+
+zero z s: z
+one z s: s zero
+two z s: s one
+
+Zero ret:
+  ret zero
+  comment "Constructor for zero."
+
+Successor n ret:
+  ret n'
+  comment "Constructor for the successor of a given number."
+  n' z s: s n
+
+successor n ret: Successor n ret
+
+predecessor n zero ret: n zero ret
+
+
+add n m ret:
+  n (:ret m) (n': Successor (add n' m) ret)
+
+multiply n m ret:
+  n (:ret n) (n': add (multiply n' m) ret)
+
+exponentiate n m ret:
+  todo
+
+hyper rank base exponent ret:
+  todo
+
+subtract n m negative ret:
+  todo
+  
+equal n m ret: todo
+
+greaterThan n m ret: todo
+
+greaterOrEqualThan n m ret: todo
+
+lessThan n m ret: todo
+
+lessOrEqualThan n m ret: todo
+
+
+minimum n m: todo
+
+maximum n m: todo

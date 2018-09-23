@@ -44,7 +44,7 @@ fructose :: Parser S.Expression
 fructose = parens $ do
   parameters <- many binder 
   maplet
-  call' <- call
+  call' <- many expr -- Can be empty
   return $ S.Fructose parameters call'
 
 galactose :: Parser S.Expression
@@ -57,7 +57,7 @@ declaration = do
   name <- binder
   parameters <- many binder
   maplet
-  call' <- call
+  call' <- many expr -- Can be empty
   return $ S.Declaration name parameters call'
 
 statement :: Parser S.Scope

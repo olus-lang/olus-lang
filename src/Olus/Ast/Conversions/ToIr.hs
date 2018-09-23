@@ -1,7 +1,7 @@
 module Olus.Ast.Conversions.ToIr where
 
 import Data.Maybe (fromJust)
-import Data.List (elemIndex, nub)
+import Data.List (elem, elemIndex, nub)
 
 import qualified Olus.Ast.Syntax as S
 import qualified Olus.Ast.Passes.Binder as B
@@ -65,7 +65,7 @@ toIr :: S.Scope -> P.Program
 toIr scope = program where
   
   isBuiltin :: String -> Bool
-  isBuiltin = undefined
+  isBuiltin = flip elem I.intrinsics
   
   builtinLookup :: String -> Maybe Int
   builtinLookup = flip elemIndex I.intrinsics

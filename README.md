@@ -9,6 +9,12 @@ stack build
 stack exec -- olus -i ./examples/demo.olus
 ```
 
+It may be useful to set the following alias:
+
+```
+alias olus="stack exec -- olus"
+```
+
 ## TODO
 
 - [ ] Compute which closures can be in which variables as a list of candidates.

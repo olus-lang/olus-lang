@@ -6,7 +6,7 @@
 git clone git@github.com:olus-lang/olus-lang.git
 cd olus-lang
 stack build
-stack exec olus ./examples/hello.olus
+stack exec -- olus -i ./examples/demo.olus
 ```
 
 ## TODO
@@ -35,10 +35,12 @@ https://www.cs.tufts.edu/~nr/pubs/zipcfg.pdf
 
 https://www.cs.tufts.edu/~nr/pubs/hoopl10.pdf
 
+
+## Using Atom Haskell-IDE
+
+https://github.com/DanielG/ghc-mod/issues/900
+
 ```
-$ stack repl
-:set prompt "\ESC[1;34m%s\n\ESC[0;34mλ> \ESC[m"
-import Data.Either
-import System.IO.Unsafe (unsafePerformIO)
-ast = fromRight (Block []) $ parseToplevel $ unsafePerformIO $ readFile "./test.olus"
+$ stack build stylish-haskell
+$ stack build ghc-mod 
 ```

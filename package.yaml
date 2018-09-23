@@ -41,9 +41,7 @@ executables:
     main: Main.hs
     dependencies:
     - olus
-    - mtl
-    - haskeline
-    - megaparsec
+    - optparse-applicative
 
 tests:
   unit-tests:

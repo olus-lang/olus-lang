@@ -1,4 +1,4 @@
-module Olus.Ir.Passes.Passes where
+module Olus.Ir.Passes where
 
 import Olus.Ir.Program
 
